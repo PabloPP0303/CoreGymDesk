@@ -26,10 +26,10 @@ export default function RegistroScreen() {
     }
     try {
       setCargando(true);
+      console.log('Enviando:', form);
       await axios.post(`${API_URL}/auth/register`, form);
-      Alert.alert('¡Registro completado!', 'Ya puedes iniciar sesión', [
-        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
-      ]);
+      window.alert('Registro completado, ya puedes iniciar sesión');
+      router.replace('/(auth)/login');
     } catch (e: any) {
       Alert.alert('Error', e.response?.data?.error || 'Error al registrarse');
     } finally {

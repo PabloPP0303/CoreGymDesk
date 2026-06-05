@@ -18,9 +18,12 @@ export async function OPTIONS() {
 
 export async function POST(req) {
   try {
-    const { email, password, nombre, apellidos, telefono, fecha_nacimiento } = await req.json();
+    const body = await req.json();
+    console.log('Datos recibidos:', body);
+    const { email, password, nombre, apellidos, telefono, fecha_nacimiento } = body;
 
     if (!email || !password || !nombre || !apellidos) {
+      console.log('Falta campo obligatorio');
       return NextResponse.json(
         { error: 'Todos los campos son obligatorios' },
         { status: 400, headers: corsHeaders }
@@ -32,6 +35,7 @@ export async function POST(req) {
       const hoy = new Date();
       const nacimiento = new Date(fecha_nacimiento);
       const edad = hoy.getFullYear() - nacimiento.getFullYear();
+      console.log('Edad calculada:', edad);
       if (edad < 18) {
         return NextResponse.json(
           { error: 'Debes tener al menos 18 años para registrarte' },
@@ -41,7 +45,12 @@ export async function POST(req) {
     }
 
     // Crear usuario en Supabase Auth
-    const { data, error } = await supabasePublic.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+    console.log('createUser resultado:', data, error);
 
     if (error) {
       return NextResponse.json(
@@ -69,6 +78,7 @@ export async function POST(req) {
     );
 
   } catch (e) {
+    console.error('Error en registro:', e.message, e.stack);
     return NextResponse.json(
       { error: e.message },
       { status: 500, headers: corsHeaders }
