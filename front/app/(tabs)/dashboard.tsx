@@ -101,7 +101,7 @@ export default function DashboardScreen() {
         <View style={styles.quickGrid}>
           {[
             { label: 'Mis rutinas', ruta: '/(tabs)/rutinas' },
-            { label: 'Mi progreso', ruta: '/(tabs)/perfil' },
+            { label: 'Mi progreso', ruta: '/(tabs)/progreso' },
             { label: 'Tienda', ruta: '/(tabs)/tienda' },
             { label: 'Mi perfil', ruta: '/(tabs)/perfil' },
           ].map(item => (

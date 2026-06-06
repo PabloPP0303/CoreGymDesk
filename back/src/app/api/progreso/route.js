@@ -74,6 +74,13 @@ export async function POST(req) {
       );
     }
 
+    if (peso) {
+      await supabase
+        .from('perfiles')
+        .update({ peso })
+        .eq('id', usuario.id);
+    }
+
     return NextResponse.json(data, { status: 201, headers: corsHeaders });
 
   } catch (e) {
