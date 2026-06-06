@@ -21,6 +21,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   actualizarPerfil: (datos: Partial<Perfil>) => Promise<void>;
+  refrescarPerfil: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -76,8 +77,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setPerfil(res.data);
   }
 
+  async function refrescarPerfil() {
+    try {
+      const res = await axios.get(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPerfil(res.data.perfil);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ usuario, perfil, token, loading, login, logout, actualizarPerfil }}>
+    <AuthContext.Provider value={{ usuario, perfil, token, loading, login, logout, actualizarPerfil, refrescarPerfil}}>
       {children}
     </AuthContext.Provider>
   );
