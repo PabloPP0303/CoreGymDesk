@@ -3,7 +3,7 @@ export const Colors = {
   dark: '#111318',
   card: '#1a1d24',
   border: '#2a2d35',
-  accent: '#c8f135',
+  accent: '#e6ea08',
   accent2: '#7c3aed',
   text: '#e8e9eb',
   muted: '#6b7280',
