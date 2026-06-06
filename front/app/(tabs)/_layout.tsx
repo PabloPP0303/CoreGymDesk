@@ -19,6 +19,8 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="dashboard" options={{ title: 'Inicio', tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="clases" options={{ title: 'Clases', tabBarIcon: ({color, size}) => <Ionicons name="calendar-outline" size={size} color={color} /> }} />
+      <Tabs.Screen name="reservas" options={{ title: 'Reservas',tabBarIcon: ({ color, size }) => <Ionicons name="bookmark-outline" size={size} color={color} />}} 
+/>
       <Tabs.Screen name="rutinas" options={{ title: 'Rutinas', tabBarIcon: ({color, size}) => <Ionicons name="fitness-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="tienda" options={{ title: 'Tienda', tabBarIcon: ({color, size}) => <Ionicons name="cart-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="perfil" options={{ title: 'Perfil', tabBarIcon: ({color, size}) => <Ionicons name="person-outline" size={size} color={color} /> }} />
