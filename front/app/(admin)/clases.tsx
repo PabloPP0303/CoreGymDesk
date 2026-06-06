@@ -81,6 +81,10 @@ export default function AdminClasesScreen() {
       Alert.alert('Error', 'El aforo máximo es 30');
       return;
     }
+    if (form.hora_inicio >= form.hora_fin) {
+      Alert.alert('Error', 'La hora de inicio debe ser anterior a la hora de fin');
+      return;
+    }
 
     try {
       const body = {

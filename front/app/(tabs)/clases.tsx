@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useCallback, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
+import { useFocusEffect } from 'expo-router';
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
@@ -11,9 +12,11 @@ export default function ClasesScreen() {
   const [clases, setClases] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  useEffect(() => {
-    cargarClases();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      cargarClases();
+    }, [])
+  );
 
   async function cargarClases() {
     try {
@@ -34,9 +37,10 @@ export default function ClasesScreen() {
         { clase_id: claseId, fecha: hoy },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      Alert.alert('¡Reserva confirmada!', 'Te has apuntado a la clase correctamente');
+      window.alert('¡Reserva confirmada! Te has apuntado a la clase correctamente');
+      cargarClases();
     } catch (e: any) {
-      Alert.alert('Error', e.response?.data?.error || 'No se pudo reservar');
+      window.alert(e.response?.data?.error || 'No se pudo reservar');
     }
   }
 
@@ -61,7 +65,7 @@ export default function ClasesScreen() {
             <Text style={[styles.diaNombre, i === 0 && styles.diaHoyText]}>{dia}</Text>
             <Text style={[styles.diaNum, i === 0 && styles.diaHoyText]}>{i + 2}</Text>
             {clases
-              .filter(c => c.dias?.includes(dia.toLowerCase()) || c.dias?.includes(['lunes','martes','miercoles','jueves','viernes','sabado','domingo'][i]))
+              .filter(c => c.dias?.includes(['lunes','martes','miercoles','jueves','viernes','sabado','domingo'][i]))
               .slice(0, 2)
               .map((c: any) => (
                 <View key={c.id} style={styles.calClase}>
@@ -77,29 +81,36 @@ export default function ClasesScreen() {
         {clases.length === 0 ? (
           <Text style={styles.emptyText}>No hay clases disponibles</Text>
         ) : (
-          clases.map((clase: any) => (
-            <View key={clase.id} style={styles.claseCard}>
-              <View style={styles.claseCardTop}>
-                <View>
-                  <Text style={styles.claseNombre}>{clase.nombre}</Text>
-                  <Text style={styles.claseMeta}>{clase.sala} · {clase.hora_inicio} – {clase.hora_fin}</Text>
-                  <Text style={styles.claseMeta}>{clase.descripcion}</Text>
-                  <Text style={styles.claseMeta}>Aforo: {clase.aforo_maximo} plazas</Text>
+          clases.map((clase: any) => {
+            const plazasOcupadas = clase.reservas?.[0]?.count ?? 0;
+            const llena = plazasOcupadas >= clase.aforo_maximo;
+
+            return (
+              <View key={clase.id} style={styles.claseCard}>
+                <View style={styles.claseCardTop}>
+                  <View style={{ flex: 1, marginRight: 8 }}>
+                    <Text style={styles.claseNombre}>{clase.nombre}</Text>
+                    <Text style={styles.claseMeta}>{clase.sala} · {clase.hora_inicio} – {clase.hora_fin}</Text>
+                    <Text style={styles.claseMeta}>{clase.descripcion}</Text>
+                  </View>
+                  <View style={[styles.badge, llena ? styles.badgeRed : styles.badgeGreen]}>
+                    <Text style={[styles.badgeText, { color: llena ? Colors.red : Colors.green }]}>
+                      {llena ? 'Aforo completo' : `${plazasOcupadas}/${clase.aforo_maximo}`}
+                    </Text>
+                  </View>
                 </View>
-                <View style={[styles.badge, clase.aforo_maximo <= 0 ? styles.badgeRed : styles.badgeGreen]}>
-                  <Text style={[styles.badgeText, clase.aforo_maximo <= 0 ? { color: Colors.red } : { color: Colors.green }]}>
-                    {clase.aforo_maximo > 0 ? 'Disponible' : 'Llena'}
+                <TouchableOpacity
+                  style={llena ? styles.btnDisabled : styles.btnPrimary}
+                  onPress={() => reservar(clase.id)}
+                  disabled={llena}
+                >
+                  <Text style={llena ? styles.btnDisabledText : styles.btnPrimaryText}>
+                    {llena ? 'Aforo completo' : 'Reservar plaza'}
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={styles.btnPrimary}
-                onPress={() => reservar(clase.id)}
-              >
-                <Text style={styles.btnPrimaryText}>Reservar plaza</Text>
-              </TouchableOpacity>
-            </View>
-          ))
+            );
+          })
         )}
       </View>
     </ScrollView>
@@ -124,7 +135,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 15, fontWeight: '600', color: Colors.text, marginBottom: 12 },
   emptyText: { color: Colors.muted, fontSize: 13 },
   claseCard: { backgroundColor: Colors.card, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: Colors.border },
-  claseCardTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  claseCardTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'flex-start' },
   claseNombre: { fontSize: 15, fontWeight: '600', color: Colors.text, marginBottom: 2 },
   claseMeta: { fontSize: 12, color: Colors.muted, marginBottom: 2 },
   badge: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, alignSelf: 'flex-start' },
@@ -133,4 +144,6 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: '600' },
   btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center' },
   btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
+  btnDisabled: { backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 8, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' },
+  btnDisabledText: { color: Colors.red, fontWeight: '700', fontSize: 14 },
 });
