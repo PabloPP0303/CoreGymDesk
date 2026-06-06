@@ -18,6 +18,18 @@ export default function AdminUsuariosScreen() {
   const [ejercicios, setEjercicios] = useState<any[]>([]);
   const [nombreRutina, setNombreRutina] = useState('');
   const router = useRouter();
+  
+  const [modalEjercicios, setModalEjercicios] = useState(false);
+  const [rutinaCreada, setRutinaCreada] = useState<any>(null);
+  const [ejercicioForm, setEjercicioForm] = useState({
+        ejercicio_id: '',
+        dia: 'lunes',
+        series: '3',
+        repeticiones: '10',
+    });
+
+  const DIAS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+  const DIAS_LABEL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
   useFocusEffect(
     useCallback(() => {
@@ -73,22 +85,47 @@ export default function AdminUsuariosScreen() {
 
   async function asignarRutina() {
     if (!nombreRutina.trim()) {
-      window.alert('Escribe un nombre para la rutina');
-      return;
+        window.alert('Escribe un nombre para la rutina');
+        return;
     }
     try {
-      await axios.post(
+        const res = await axios.post(
         `${API_URL}/rutinas`,
         { nombre: nombreRutina, usuario_id: usuarioSeleccionado.id, ejercicios: [] },
         { headers: { Authorization: `Bearer ${token}` } }
-      );
-      window.alert(`Rutina "${nombreRutina}" asignada a ${usuarioSeleccionado.nombre}`);
-      setModalRutina(false);
-      setNombreRutina('');
+        );
+        setRutinaCreada(res.data);
+        setModalRutina(false);
+        setNombreRutina('');
+        setModalEjercicios(true);
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al asignar rutina');
+        window.alert(e.response?.data?.error || 'Error al asignar rutina');
     }
   }
+
+  async function añadirEjercicioAdmin() {
+    if (!ejercicioForm.ejercicio_id) {
+        window.alert('Selecciona un ejercicio');
+        return;
+    }
+    try {
+        await axios.post(
+        `${API_URL}/rutinas/ejercicio`,
+        {
+            rutina_id: rutinaCreada.id,
+            ejercicio_id: parseInt(ejercicioForm.ejercicio_id),
+            dia: ejercicioForm.dia,
+            series: parseInt(ejercicioForm.series),
+            repeticiones: parseInt(ejercicioForm.repeticiones),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setEjercicioForm({ ejercicio_id: '', dia: 'lunes', series: '3', repeticiones: '10' });
+        window.alert('Ejercicio añadido');
+    } catch (e: any) {
+        window.alert(e.response?.data?.error || 'Error al añadir ejercicio');
+    }
+}
 
   const usuariosFiltrados = usuarios.filter(u =>
     `${u.nombre} ${u.apellidos}`.toLowerCase().includes(busqueda.toLowerCase())
@@ -205,7 +242,72 @@ export default function AdminUsuariosScreen() {
           </View>
         </View>
       </Modal>
+      <Modal visible={modalEjercicios} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+            <ScrollView style={styles.modalContent}>
+            <Text style={styles.modalTitulo}>Añadir ejercicios a "{rutinaCreada?.nombre}"</Text>
+            <Text style={styles.infoText}>Rutina de {usuarioSeleccionado?.nombre}. Puedes añadir varios ejercicios.</Text>
+
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Ejercicio</Text>
+                <ScrollView style={styles.ejerciciosList} nestedScrollEnabled>
+                {ejercicios.map(e => (
+                    <TouchableOpacity
+                    key={e.id}
+                    style={[styles.ejercicioOption, ejercicioForm.ejercicio_id === String(e.id) && styles.ejercicioOptionActive]}
+                    onPress={() => setEjercicioForm(p => ({ ...p, ejercicio_id: String(e.id) }))}
+                    >
+                    <Text style={[styles.ejercicioOptionText, ejercicioForm.ejercicio_id === String(e.id) && styles.ejercicioOptionTextActive]}>
+                        {e.nombre}
+                    </Text>
+                    <Text style={styles.ejercicioOptionGrupo}>{e.grupo_muscular}</Text>
+                    </TouchableOpacity>
+                ))}
+                </ScrollView>
+            </View>
+
+            <View style={styles.inputGroup}>
+                <Text style={styles.label}>Día</Text>
+                <View style={styles.diasRow}>
+                {DIAS.map((dia, i) => (
+                    <TouchableOpacity
+                    key={dia}
+                    style={[styles.diaBadge, ejercicioForm.dia === dia && styles.diaBadgeActive]}
+                    onPress={() => setEjercicioForm(p => ({ ...p, dia }))}
+                    >
+                    <Text style={[styles.diaText, ejercicioForm.dia === dia && styles.diaTextActive]}>
+                        {DIAS_LABEL[i].slice(0, 3)}
+                    </Text>
+                    </TouchableOpacity>
+                ))}
+                </View>
+            </View>
+
+            <View style={styles.row}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={styles.label}>Series</Text>
+                <TextInput style={styles.input} value={ejercicioForm.series} onChangeText={v => setEjercicioForm(p => ({ ...p, series: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
+                </View>
+                <View style={{ width: 12 }} />
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={styles.label}>Repeticiones</Text>
+                <TextInput style={styles.input} value={ejercicioForm.repeticiones} onChangeText={v => setEjercicioForm(p => ({ ...p, repeticiones: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
+                </View>
+            </View>
+
+            <View style={styles.modalBtns}>
+                <TouchableOpacity style={styles.btnGhost} onPress={() => { setModalEjercicios(false); window.alert(`Rutina "${rutinaCreada?.nombre}" creada correctamente`); }}>
+                <Text style={styles.btnGhostText}>Finalizar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.btnPrimary} onPress={añadirEjercicioAdmin}>
+                <Text style={styles.btnPrimaryText}>+ Añadir</Text>
+                </TouchableOpacity>
+            </View>
+            </ScrollView>
+        </View>
+        </Modal>
     </ScrollView>
+    
   );
 }
 
@@ -247,4 +349,16 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnGhostText: { color: Colors.text, fontSize: 14 },
+  ejerciciosList: { maxHeight: 160, backgroundColor: Colors.dark, borderRadius: 8, borderWidth: 1, borderColor: Colors.border },
+  ejercicioOption: { padding: 10, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  ejercicioOptionActive: { backgroundColor: 'rgba(200,241,53,0.1)' },
+  ejercicioOptionText: { fontSize: 13, color: Colors.text },
+  ejercicioOptionTextActive: { color: Colors.accent, fontWeight: '600' },
+  ejercicioOptionGrupo: { fontSize: 11, color: Colors.muted, marginTop: 1 },
+  diasRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  diaBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1, borderColor: Colors.border },
+  diaBadgeActive: { backgroundColor: Colors.accent, borderColor: Colors.accent },
+  diaText: { fontSize: 11, color: Colors.muted },
+  diaTextActive: { color: Colors.black, fontWeight: '700' },
+  row: { flexDirection: 'row' },
 });
