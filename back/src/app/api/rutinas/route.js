@@ -26,7 +26,7 @@ export async function GET(req) {
         *,
         rutina_ejercicios (
           *,
-          ejercicios (nombre, grupo_muscular)
+          ejercicios (nombre, grupo_muscular, imagen_url)
         )
       `)
       .eq('usuario_id', usuarioId)
