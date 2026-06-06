@@ -14,4 +14,4 @@ export const Colors = {
   white: '#ffffff',
 };
  
-export const API_URL = 'http://localhost:3000/api';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://core-gym-desk.vercel.app/api';
