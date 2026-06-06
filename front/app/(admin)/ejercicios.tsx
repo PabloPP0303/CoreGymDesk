@@ -1,12 +1,20 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, TextInput, Modal
+  ActivityIndicator, TextInput, Modal, Image
 } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { createClient } from '@supabase/supabase-js';
+
+
+const supabase = createClient(
+  'https://fcwmxzmowmnoknjrfvfo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjd214em1vd21ub2tuanJmdmZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMjYzNjUsImV4cCI6MjA5NTkwMjM2NX0.l4PRv8LfRx2R87WhwbIl5yE-StktrS0_Ag-96xa4G0Y'
+);
 
 const GRUPOS = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Bíceps', 'Tríceps', 'Core', 'Glúteos', 'Gemelos', 'Global'];
 
@@ -93,6 +101,38 @@ export default function AdminEjerciciosScreen() {
     }
   }
 
+  async function subirImagen() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const uri = result.assets[0].uri;
+    const fileName = `ejercicio_${Date.now()}.jpg`;
+
+    const response = await fetch(uri);
+    const blob = await response.blob();
+
+    const { data, error } = await supabase.storage
+        .from('ejercicios')
+        .upload(fileName, blob, { contentType: 'image/jpeg' });
+
+    if (error) {
+        window.alert('Error al subir imagen');
+        return;
+    }
+
+    const { data: urlData } = supabase.storage
+        .from('ejercicios')
+        .getPublicUrl(fileName);
+
+    setForm(p => ({ ...p, imagen_url: urlData.publicUrl }));
+    window.alert('Imagen subida correctamente');
+}
+
   const grupos = ['Todos', ...GRUPOS];
 
   const ejerciciosFiltrados = ejercicios.filter(e => {
@@ -147,6 +187,13 @@ export default function AdminEjerciciosScreen() {
         ) : (
           ejerciciosFiltrados.map((e: any) => (
             <View key={e.id} style={styles.ejercicioCard}>
+                {e.imagen_url ? (
+                    <Image 
+                    source={{ uri: e.imagen_url }} 
+                    style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10 }}
+                    resizeMode="cover"
+                    />
+                ) : null}
               <View style={styles.ejercicioInfo}>
                 <Text style={styles.ejercicioNombre}>{e.nombre}</Text>
                 <View style={styles.grupoBadge}>
@@ -215,16 +262,20 @@ export default function AdminEjerciciosScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>URL de imagen (opcional)</Text>
-              <TextInput
-                style={styles.input}
-                value={form.imagen_url}
-                onChangeText={v => setForm(p => ({ ...p, imagen_url: v }))}
-                placeholder="https://..."
-                placeholderTextColor={Colors.muted}
-              />
+                <Text style={styles.label}>Imagen</Text>
+                {form.imagen_url ? (
+                    <Image 
+                    source={{ uri: form.imagen_url }} 
+                    style={{ width: '100%', height: 150, borderRadius: 8, marginBottom: 8 }}
+                    resizeMode="cover"
+                    />
+                ) : null}
+                <TouchableOpacity style={styles.btnGhost} onPress={subirImagen}>
+                    <Text style={styles.btnGhostText}>
+                    {form.imagen_url ? 'Cambiar imagen' : 'Seleccionar imagen'}
+                    </Text>
+                </TouchableOpacity>
             </View>
-
             <View style={styles.modalBtns}>
               <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
                 <Text style={styles.btnGhostText}>Cancelar</Text>

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, TextInput, Modal
+  ActivityIndicator, TextInput, Modal, Image
 } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -198,6 +198,13 @@ export default function RutinasScreen() {
                           setModalEditar(true);
                         }}
                       >
+                        {re.ejercicios?.imagen_url ? (
+                          <Image
+                            source={{ uri: re.ejercicios.imagen_url }}
+                            style={{ width: 40, height: 40, borderRadius: 6, marginRight: 10 }}
+                            resizeMode="cover"
+                          />
+                        ) : null}
                         <View style={{ flex: 1 }}>
                           <Text style={styles.ejercicioNombre}>{re.ejercicios?.nombre}</Text>
                           <Text style={styles.ejercicioGrupo}>{re.ejercicios?.grupo_muscular}</Text>
@@ -316,6 +323,13 @@ export default function RutinasScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitulo}>Editar {ejercicioEditando?.ejercicios?.nombre}</Text>
+            {ejercicioEditando?.ejercicios?.imagen_url ? (
+              <Image
+                source={{ uri: ejercicioEditando.ejercicios.imagen_url }}
+                style={{ width: '100%', height: 180, borderRadius: 12, marginBottom: 16 }}
+                resizeMode="contain"
+              />
+            ) : null}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Día</Text>
               <View style={styles.diasRow}>
