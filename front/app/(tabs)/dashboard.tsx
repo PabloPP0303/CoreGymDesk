@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
@@ -11,9 +11,11 @@ export default function DashboardScreen() {
   const [cargando, setCargando] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    cargarReservas();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      cargarReservas();
+    }, [])
+  );
 
   async function cargarReservas() {
     try {
