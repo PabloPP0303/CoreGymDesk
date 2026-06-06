@@ -74,6 +74,19 @@ export async function POST(req) {
       );
     }
 
+    const { data: cuota } = await supabase
+      .from('cuotas')
+      .select('estado')
+      .eq('usuario_id', targetUsuarioId)
+      .single();
+
+    if (!cuota || cuota.estado !== 'al_dia') {
+      return NextResponse.json(
+        { error: 'Necesitas tener la cuota al día para reservar clases' },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
     // Verificar aforo
     const { count } = await supabase
       .from('reservas')
