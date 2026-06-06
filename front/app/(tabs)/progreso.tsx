@@ -101,7 +101,7 @@ export default function ProgresoScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Stats rápidas */}
+      
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={[styles.statNum, { color: Colors.accent }]}>
@@ -128,7 +128,7 @@ export default function ProgresoScreen() {
         </View>
       </View>
 
-      {/* Historial de peso */}
+      
       {registrosPeso.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Historial de peso</Text>
@@ -152,7 +152,7 @@ export default function ProgresoScreen() {
         </View>
       )}
 
-      {/* Mejores marcas */}
+      
       {Object.keys(marcasPorEjercicio).length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mejores marcas</Text>
@@ -170,7 +170,7 @@ export default function ProgresoScreen() {
         </View>
       )}
 
-      {/* Últimos registros */}
+      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Últimos registros</Text>
         {registros.length === 0 ? (
@@ -195,7 +195,7 @@ export default function ProgresoScreen() {
         )}
       </View>
 
-      {/* Modal añadir registro */}
+      
       <Modal visible={modal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <ScrollView style={styles.modalContent}>
@@ -206,7 +206,7 @@ export default function ProgresoScreen() {
               <TextInput style={styles.input} value={form.fecha} onChangeText={v => setForm(p => ({ ...p, fecha: v }))} placeholderTextColor={Colors.muted} />
             </View>
 
-            <Text style={styles.sectionLabel}>Medidas corporales</Text>
+            <View><Text style={styles.sectionLabel}>Medidas corporales</Text></View>
 
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
@@ -220,7 +220,7 @@ export default function ProgresoScreen() {
               </View>
             </View>
 
-            <Text style={styles.sectionLabel}>Levantamiento (opcional)</Text>
+            <View><Text style={styles.sectionLabel}>Levantamiento (opcional)</Text></View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Ejercicio</Text>
@@ -246,7 +246,7 @@ export default function ProgresoScreen() {
               </ScrollView>
             </View>
 
-            {form.ejercicio_id && (
+            {form.ejercicio_id !== ''&& (
               <View style={styles.row}>
                 <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={styles.label}>Peso levantado (kg)</Text>
