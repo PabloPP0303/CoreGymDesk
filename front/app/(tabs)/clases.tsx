@@ -4,13 +4,18 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
-
-const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ClasesScreen() {
   const { token } = useAuth();
   const [clases, setClases] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+  const hoy = new Date();
+  const diasSemana = Array.from({ length: 7 }, (_, i) => {
+    const dia = new Date(hoy);
+    dia.setDate(hoy.getDate() + i);
+    return dia;
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -59,13 +64,19 @@ export default function ClasesScreen() {
         <Text style={styles.subtitulo}>Calendario semanal</Text>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calendarRow}>
-        {DIAS.map((dia, i) => (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calendarRow}>
+      {diasSemana.map((dia, i) => {
+        const nombreDia = dia.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
+        return (
           <View key={i} style={[styles.diaCol, i === 0 && styles.diaColHoy]}>
-            <Text style={[styles.diaNombre, i === 0 && styles.diaHoyText]}>{dia}</Text>
-            <Text style={[styles.diaNum, i === 0 && styles.diaHoyText]}>{i + 2}</Text>
+            <Text style={[styles.diaNombre, i === 0 && styles.diaHoyText]}>
+              {dia.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase()}
+            </Text>
+            <Text style={[styles.diaNum, i === 0 && styles.diaHoyText]}>
+              {dia.getDate()}
+            </Text>
             {clases
-              .filter(c => c.dias?.includes(['lunes','martes','miercoles','jueves','viernes','sabado','domingo'][i]))
+              .filter(c => c.dias?.includes(nombreDia))
               .slice(0, 2)
               .map((c: any) => (
                 <View key={c.id} style={styles.calClase}>
@@ -73,8 +84,9 @@ export default function ClasesScreen() {
                 </View>
               ))}
           </View>
-        ))}
-      </ScrollView>
+        );
+      })}
+    </ScrollView>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Todas las clases</Text>
@@ -104,9 +116,12 @@ export default function ClasesScreen() {
                   onPress={() => reservar(clase.id)}
                   disabled={llena}
                 >
-                  <Text style={llena ? styles.btnDisabledText : styles.btnPrimaryText}>
-                    {llena ? 'Aforo completo' : 'Reservar plaza'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <Ionicons name="bookmark-outline" size={16} color={llena ? Colors.red : Colors.black} style={{ marginRight: 6 }} />
+                    <Text style={llena ? styles.btnDisabledText : styles.btnPrimaryText}>
+                      {llena ? 'Aforo completo' : 'Reservar plaza'}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             );

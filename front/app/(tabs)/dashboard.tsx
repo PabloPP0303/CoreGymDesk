@@ -11,6 +11,13 @@ export default function DashboardScreen() {
   const [cargando, setCargando] = useState(true);
   const router = useRouter();
 
+  const hoy = new Date();
+  const fecha = hoy.toLocaleDateString('es-ES', { 
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long' 
+  });
+
   useFocusEffect(
     useCallback(() => {
       cargarReservas();
@@ -34,8 +41,8 @@ export default function DashboardScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.saludo}>Buen día, {perfil?.nombre} 👋</Text>
-          <Text style={styles.fecha}>Lunes, 2 de junio</Text>
+          <Text style={styles.saludo}>Bienvenido, {perfil?.nombre}</Text>
+          <Text style={styles.fecha}>{fecha.charAt(0).toUpperCase() + fecha.slice(1)}</Text>
         </View>
         <TouchableOpacity onPress={logout}>
           <Text style={styles.logout}>Salir</Text>
