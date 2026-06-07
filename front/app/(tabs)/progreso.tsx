@@ -95,14 +95,16 @@ export default function ProgresoScreen() {
   return (
       <>
           <ScrollView style={styles.container}>
-              <View style={styles.header}>
-                  <View>
+              <View style={styles.headerSimple}>
+                  <View style={styles.headerLeftSimple}>
                       <Text style={styles.titulo}>Mi progreso</Text>
                       <Text style={styles.subtitulo}>{registros.length} registros</Text>
                   </View>
-                  <TouchableOpacity style={styles.btnPrimary} onPress={() => setModal(true)}>
+                  <View style={styles.headerRightSimple}>
+                    <TouchableOpacity style={styles.btnPrimary} onPress={() => setModal(true)}>
                       <Text style={styles.btnPrimaryText}>+ Añadir</Text>
                   </TouchableOpacity>
+                  </View>
               </View>
 
 
@@ -329,5 +331,9 @@ const styles = StyleSheet.create({
   btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14, fontFamily: 'Inter_700Bold' },
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
-  btnGhostText: { color: Colors.text, fontSize: 14, fontFamily: 'Inter_400Regular' },
+  btnGhostText: { color: Colors.text, fontSize: 14 },
+  headerSimple: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center', paddingHorizontal: 16,paddingVertical: 14,width: '100%', backgroundColor: Colors.black},
+  headerLeftSimple: {flexDirection: 'column'},
+  headerRightSimple: {justifyContent: 'center',alignItems: 'flex-end'},
+
 });
