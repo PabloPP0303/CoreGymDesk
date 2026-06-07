@@ -28,6 +28,7 @@ export default function AdminCuotasScreen() {
     fecha_pago: new Date().toISOString().split('T')[0],
     fecha_vencimiento: '',
   });
+  const hoy = new Date().toISOString().split('T')[0];
 
   useFocusEffect(
     useCallback(() => {
@@ -67,6 +68,15 @@ export default function AdminCuotasScreen() {
       mostrar('Introduce la fecha de vencimiento', 'error');
       return;
     }
+      if (form.fecha_vencimiento < hoy) {
+          mostrar('La fecha de vencimiento no puede ser anterior a hoy', 'error');
+          return;
+      }
+
+      if (form.fecha_pago < hoy) {
+          mostrar('La fecha de pago no puede ser anterior a hoy', 'error');
+          return;
+      }
     try {
       const cuotaExistente = cuotas.find(c => c.usuario_id === usuarioSeleccionado.id);
       if (cuotaExistente) {
@@ -314,6 +324,7 @@ export default function AdminCuotasScreen() {
                             </View>
                         </View>
                     </View>
+                    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
                 </Modal>
             </ScrollView>
             <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
