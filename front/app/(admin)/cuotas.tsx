@@ -130,12 +130,10 @@ export default function AdminCuotasScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.titulo}>Cuotas</Text>
-          <Text style={styles.subtitulo}>Control de membresías</Text>
-        </View>
-      </View>
+          <View style={styles.header}>
+              <Text style={styles.titulo}>Cuotas</Text>
+              <Text style={styles.subtitulo}>Control de membresías</Text>
+          </View>
 
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
@@ -289,15 +287,15 @@ export default function AdminCuotasScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
-  header: { padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  header: {flexDirection: 'column',justifyContent: 'center',paddingHorizontal: 16,paddingTop: 20,paddingBottom: 16,width: '100%',backgroundColor: Colors.black},
   titulo: { fontSize: 24, fontWeight: '700', color: Colors.text },
   subtitulo: { fontSize: 12, color: Colors.muted, marginTop: 2 },
   statsRow: { flexDirection: 'row', gap: 10, padding: 16 },
   statCard: { flex: 1, backgroundColor: Colors.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: Colors.border },
   statNum: { fontSize: 28, fontWeight: '700' },
   statLabel: { fontSize: 11, color: Colors.muted, marginTop: 4 },
-  filtrosRow: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  filtroBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, marginRight: 8 },
+  filtrosRow: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: Colors.dark, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  filtroBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, marginRight: 8, backgroundColor: Colors.black },
   filtroBadgeActive: { backgroundColor: Colors.accent, borderColor: Colors.accent },
   filtroText: { fontSize: 12, color: Colors.muted },
   filtroTextActive: { color: Colors.black, fontWeight: '700' },
