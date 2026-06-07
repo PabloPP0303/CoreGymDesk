@@ -9,6 +9,9 @@ import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { createClient } from '@supabase/supabase-js';
+import { Ionicons } from '@expo/vector-icons';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 
 const supabase = createClient(
@@ -34,6 +37,10 @@ export default function AdminEjerciciosScreen() {
   const [modal, setModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState(formVacio);
+  const [pagina, setPagina] = useState(1);
+  const ITEMS_POR_PAGINA = 10;
+  const { toast, mostrar, ocultar } = useToast();
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -71,7 +78,7 @@ export default function AdminEjerciciosScreen() {
 
   async function guardar() {
     if (!form.nombre.trim()) {
-      window.alert('El nombre es obligatorio');
+        mostrar('El nombre es obligatorio', 'error');
       return;
     }
     try {
@@ -84,7 +91,7 @@ export default function AdminEjerciciosScreen() {
       setModal(false);
       cargarEjercicios();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al guardar ejercicio');
+      mostrar(e.response?.data?.error || 'Error al guardar ejercicio', 'error');
     }
   }
 
@@ -97,7 +104,7 @@ export default function AdminEjerciciosScreen() {
       });
       cargarEjercicios();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al eliminar');
+      mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
     }
   }
 
@@ -121,7 +128,7 @@ export default function AdminEjerciciosScreen() {
         .upload(fileName, blob, { contentType: 'image/jpeg' });
 
     if (error) {
-        window.alert('Error al subir imagen');
+        mostrar('Error al subir imagen', 'error');
         return;
     }
 
@@ -130,7 +137,7 @@ export default function AdminEjerciciosScreen() {
         .getPublicUrl(fileName);
 
     setForm(p => ({ ...p, imagen_url: urlData.publicUrl }));
-    window.alert('Imagen subida correctamente');
+    mostrar('Imagen subida correctamente', 'success');
 }
 
   const grupos = ['Todos', ...GRUPOS];
@@ -141,155 +148,185 @@ export default function AdminEjerciciosScreen() {
     return coincideBusqueda && coincideGrupo;
   });
 
+    const ejerciciosPaginados = ejerciciosFiltrados.slice(
+        (pagina - 1) * ITEMS_POR_PAGINA,
+        pagina * ITEMS_POR_PAGINA
+    );
+    const totalPaginas = Math.ceil(ejerciciosFiltrados.length / ITEMS_POR_PAGINA);
+
   if (cargando) {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
   }
 
-  return (
-    <ScrollView style={styles.container}>
-          <View style={styles.header}>
-              <View style={styles.headerLeftSimple}>
-                  <Text style={styles.titulo}>Ejercicios</Text>
-                  <Text style={styles.subtitulo}>{ejercicios.length} ejercicios en el banco</Text>
-              </View>
-              <View style={styles.headerRightSimple}>
-                  <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
-                      <Text style={styles.btnPrimaryText}>+ Nuevo</Text>
-                  </TouchableOpacity>
-              </View>
-          </View>
-
-      <View style={styles.searchWrap}>
-        <TextInput
-          style={styles.searchInput}
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar ejercicio..."
-          placeholderTextColor={Colors.muted}
-        />
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
-        {grupos.map(g => (
-          <TouchableOpacity
-            key={g}
-            style={[styles.filtroBadge, filtroGrupo === g && styles.filtroBadgeActive]}
-            onPress={() => setFiltroGrupo(g)}
-          >
-            <Text style={[styles.filtroText, filtroGrupo === g && styles.filtroTextActive]}>{g}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <View style={styles.section}>
-        {ejerciciosFiltrados.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No se encontraron ejercicios</Text>
-          </View>
-        ) : (
-          ejerciciosFiltrados.map((e: any) => (
-            <View key={e.id} style={styles.ejercicioCard}>
-                {e.imagen_url ? (
-                    <Image 
-                    source={{ uri: e.imagen_url }} 
-                    style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10 }}
-                    resizeMode="cover"
-                    />
-                ) : null}
-              <View style={styles.ejercicioInfo}>
-                <Text style={styles.ejercicioNombre}>{e.nombre}</Text>
-                <View style={styles.grupoBadge}>
-                  <Text style={styles.grupoText}>{e.grupo_muscular}</Text>
+    return (
+        <>
+            <ScrollView style={styles.container}>
+                <View style={styles.header}>
+                    <View style={styles.headerLeftSimple}>
+                        <Text style={styles.titulo}>Ejercicios</Text>
+                        <Text style={styles.subtitulo}>{ejercicios.length} ejercicios en el banco</Text>
+                    </View>
+                    <View style={styles.headerRightSimple}>
+                        <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
+                            <Text style={styles.btnPrimaryText}>+ Nuevo</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                {e.descripcion ? <Text style={styles.ejercicioDesc}>{e.descripcion}</Text> : null}
-              </View>
-              <View style={styles.acciones}>
-                <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(e)}>
-                  <Text style={styles.btnEditarText}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(e.id, e.nombre)}>
-                  <Text style={styles.btnEliminarText}>Borrar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))
-        )}
-      </View>
 
-      <Modal visible={modal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.modalTitulo}>
-              {editando ? 'Editar ejercicio' : 'Nuevo ejercicio'}
-            </Text>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nombre *</Text>
-              <TextInput
-                style={styles.input}
-                value={form.nombre}
-                onChangeText={v => setForm(p => ({ ...p, nombre: v }))}
-                placeholder="Press de banca..."
-                placeholderTextColor={Colors.muted}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Grupo muscular</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  {GRUPOS.map(g => (
-                    <TouchableOpacity
-                      key={g}
-                      style={[styles.filtroBadge, form.grupo_muscular === g && styles.filtroBadgeActive]}
-                      onPress={() => setForm(p => ({ ...p, grupo_muscular: g }))}
-                    >
-                      <Text style={[styles.filtroText, form.grupo_muscular === g && styles.filtroTextActive]}>{g}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Descripción</Text>
-              <TextInput
-                style={[styles.input, { height: 80 }]}
-                value={form.descripcion}
-                onChangeText={v => setForm(p => ({ ...p, descripcion: v }))}
-                placeholder="Descripción del ejercicio..."
-                placeholderTextColor={Colors.muted}
-                multiline
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Imagen</Text>
-                {form.imagen_url ? (
-                    <Image 
-                    source={{ uri: form.imagen_url }} 
-                    style={{ width: '100%', height: 150, borderRadius: 8, marginBottom: 8 }}
-                    resizeMode="cover"
+                <View style={styles.searchWrap}>
+                    <TextInput
+                        style={styles.searchInput}
+                        value={busqueda}
+                        onChangeText={v => { setBusqueda(v); setPagina(1) }}
+                        placeholder="Buscar ejercicio..."
+                        placeholderTextColor={Colors.muted}
                     />
-                ) : null}
-                <TouchableOpacity style={styles.btnGhost} onPress={subirImagen}>
-                    <Text style={styles.btnGhostText}>
-                    {form.imagen_url ? 'Cambiar imagen' : 'Seleccionar imagen'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
-                <Text style={styles.btnGhostText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
-                <Text style={styles.btnPrimaryText}>{editando ? 'Guardar cambios' : 'Crear ejercicio'}</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
-    </ScrollView>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
+                    {grupos.map(g => (
+                        <TouchableOpacity
+                            key={g}
+                            style={[styles.filtroBadge, filtroGrupo === g && styles.filtroBadgeActive]}
+                            onPress={() => { setFiltroGrupo(g); setPagina(1) }}
+                        >
+                            <Text style={[styles.filtroText, filtroGrupo === g && styles.filtroTextActive]}>{g}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                <View style={styles.section}>
+                    {ejerciciosFiltrados.length === 0 ? (
+                        <View style={styles.emptyCard}>
+                            <Text style={styles.emptyText}>No se encontraron ejercicios</Text>
+                        </View>
+                    ) : (
+                        ejerciciosPaginados.map((e: any) => (
+                            <View key={e.id} style={styles.ejercicioCard}>
+                                {e.imagen_url ? (
+                                    <Image
+                                        source={{ uri: e.imagen_url }}
+                                        style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10 }}
+                                        resizeMode="cover"
+                                    />
+                                ) : null}
+                                <View style={styles.ejercicioInfo}>
+                                    <Text style={styles.ejercicioNombre}>{e.nombre}</Text>
+                                    <View style={styles.grupoBadge}>
+                                        <Text style={styles.grupoText}>{e.grupo_muscular}</Text>
+                                    </View>
+                                    {e.descripcion ? <Text style={styles.ejercicioDesc}>{e.descripcion}</Text> : null}
+                                </View>
+                                <View style={styles.acciones}>
+                                    <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(e)}>
+                                        <Text style={styles.btnEditarText}>Editar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(e.id, e.nombre)}>
+                                        <Text style={styles.btnEliminarText}>Borrar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ))
+                    )}
+                    {totalPaginas > 1 && (
+                        <View style={styles.paginacionContainer}>
+                            <TouchableOpacity
+                                style={[styles.btnPaginacion, { opacity: pagina === 1 ? 0.4 : 1 }]}
+                                onPress={() => setPagina(p => p - 1)}
+                                disabled={pagina === 1}
+                            >
+                                <Text style={styles.btnGhostText}><Ionicons name="arrow-back" size={16} /> Anterior</Text>
+                            </TouchableOpacity>
+
+                            <Text style={styles.paginacionTexto}>{pagina} / {totalPaginas}</Text>
+
+                            <TouchableOpacity
+                                style={[styles.btnPaginacion, { opacity: pagina === totalPaginas ? 0.4 : 1 }]}
+                                onPress={() => setPagina(p => p + 1)}
+                                disabled={pagina === totalPaginas}
+                            >
+                                <Text style={styles.btnGhostText}>Siguiente <Ionicons name="arrow-forward" size={16} /></Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+
+                <Modal visible={modal} transparent animationType="slide">
+                    <View style={styles.modalOverlay}>
+                        <ScrollView style={styles.modalContent}>
+                            <Text style={styles.modalTitulo}>
+                                {editando ? 'Editar ejercicio' : 'Nuevo ejercicio'}
+                            </Text>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Nombre *</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={form.nombre}
+                                    onChangeText={v => setForm(p => ({ ...p, nombre: v }))}
+                                    placeholder="Press de banca..."
+                                    placeholderTextColor={Colors.muted}
+                                />
+                            </View>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Grupo muscular</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                    <View style={{ flexDirection: 'row', gap: 6 }}>
+                                        {GRUPOS.map(g => (
+                                            <TouchableOpacity
+                                                key={g}
+                                                style={[styles.filtroBadge, form.grupo_muscular === g && styles.filtroBadgeActive]}
+                                                onPress={() => setForm(p => ({ ...p, grupo_muscular: g }))}
+                                            >
+                                                <Text style={[styles.filtroText, form.grupo_muscular === g && styles.filtroTextActive]}>{g}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </ScrollView>
+                            </View>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Descripción</Text>
+                                <TextInput
+                                    style={[styles.input, { height: 80 }]}
+                                    value={form.descripcion}
+                                    onChangeText={v => setForm(p => ({ ...p, descripcion: v }))}
+                                    placeholder="Descripción del ejercicio..."
+                                    placeholderTextColor={Colors.muted}
+                                    multiline
+                                />
+                            </View>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Imagen</Text>
+                                {form.imagen_url ? (
+                                    <Image
+                                        source={{ uri: form.imagen_url }}
+                                        style={{ width: '100%', height: 150, borderRadius: 8, marginBottom: 8 }}
+                                        resizeMode="cover"
+                                    />
+                                ) : null}
+                                <TouchableOpacity style={styles.btnGhost} onPress={subirImagen}>
+                                    <Text style={styles.btnGhostText}>
+                                        {form.imagen_url ? 'Cambiar imagen' : 'Seleccionar imagen'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.modalBtns}>
+                                <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
+                                    <Text style={styles.btnGhostText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
+                                    <Text style={styles.btnPrimaryText}>{editando ? 'Guardar cambios' : 'Crear ejercicio'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </View>
+                </Modal>
+            </ScrollView>
+            <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+        </>
   );
 }
 
@@ -332,4 +369,7 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: Colors.black,fontWeight: 'bold'},
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnGhostText: { color: Colors.text, fontSize: 14 },
+  paginacionContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, width: '100%' },
+  btnPaginacion: { backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, marginHorizontal: 8, justifyContent: 'center', alignItems: 'center' },
+  paginacionTexto: { color: Colors.muted, fontSize: 14, fontWeight: '500', marginHorizontal: 12 },
 });

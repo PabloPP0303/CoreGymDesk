@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput} from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { Colors } from '../../constants/theme';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function PerfilScreen() {
   const { perfil, logout, actualizarPerfil } = useAuth();
@@ -13,6 +15,7 @@ export default function PerfilScreen() {
     peso: String(perfil?.peso || ''),
     altura: String(perfil?.altura || ''),
   });
+  const { toast, mostrar, ocultar } = useToast();
 
   async function guardar() {
     try {
@@ -24,90 +27,93 @@ export default function PerfilScreen() {
         altura: parseFloat(form.altura),
       });
       setEditando(false);
-      Alert.alert('¡Guardado!', 'Perfil actualizado correctamente');
+      mostrar('Perfil actualizado correctamente', 'success');
     } catch (e) {
-      Alert.alert('Error', 'No se pudo actualizar el perfil');
+      mostrar('No se pudo actualizar el perfil', 'error');
     }
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.avatarWrap}>
-          <Text style={styles.avatarText}>
-            {perfil?.nombre?.[0]}{perfil?.apellidos?.[0]}
-          </Text>
-        </View>
-        <Text style={styles.nombre}>{perfil?.nombre} {perfil?.apellidos}</Text>
-        <Text style={styles.rol}>Socio · Gimnasio Combo</Text>
-        <View style={styles.badgeGreen}>
-          <Text style={styles.badgeGreenText}>Membresía activa</Text>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Datos personales</Text>
-          <TouchableOpacity onPress={() => setEditando(!editando)}>
-            <Text style={styles.editarBtn}>{editando ? 'Cancelar' : 'Editar'}</Text>
-          </TouchableOpacity>
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.avatarWrap}>
+            <Text style={styles.avatarText}>
+              {perfil?.nombre?.[0]}{perfil?.apellidos?.[0]}
+            </Text>
+          </View>
+          <Text style={styles.nombre}>{perfil?.nombre} {perfil?.apellidos}</Text>
+          <Text style={styles.rol}>Socio · Gimnasio Combo</Text>
+          <View style={styles.badgeGreen}>
+            <Text style={styles.badgeGreenText}>Membresía activa</Text>
+          </View>
         </View>
 
-        {editando ? (
-          <View style={styles.card}>
-            {[
-              { campo: 'nombre', label: 'Nombre' },
-              { campo: 'apellidos', label: 'Apellidos' },
-              { campo: 'telefono', label: 'Teléfono' },
-            ].map(({ campo, label }) => (
-              <View key={campo} style={styles.inputGroup}>
-                <Text style={styles.label}>{label}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={(form as any)[campo]}
-                  onChangeText={v => setForm(prev => ({ ...prev, [campo]: v }))}
-                  placeholderTextColor={Colors.muted}
-                />
-              </View>
-            ))}
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Peso (kg)</Text>
-                <TextInput style={styles.input} value={form.peso} onChangeText={v => setForm(p => ({ ...p, peso: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Altura (cm)</Text>
-                <TextInput style={styles.input} value={form.altura} onChangeText={v => setForm(p => ({ ...p, altura: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
-              </View>
-            </View>
-            <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
-              <Text style={styles.btnPrimaryText}>Guardar cambios</Text>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Datos personales</Text>
+            <TouchableOpacity onPress={() => setEditando(!editando)}>
+              <Text style={styles.editarBtn}>{editando ? 'Cancelar' : 'Editar'}</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.card}>
-            {[
-              { label: 'Nombre', valor: `${perfil?.nombre} ${perfil?.apellidos}` },
-              { label: 'Teléfono', valor: perfil?.telefono || '—' },
-              { label: 'Peso', valor: perfil?.peso ? `${perfil.peso} kg` : '—' },
-              { label: 'Altura', valor: perfil?.altura ? `${perfil.altura} cm` : '—' },
-            ].map(({ label, valor }) => (
-              <View key={label} style={styles.dataRow}>
-                <Text style={styles.dataLabel}>{label}</Text>
-                <Text style={styles.dataValor}>{valor}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
 
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.btnDanger} onPress={logout}>
-          <Text style={styles.btnDangerText}>Cerrar sesión</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          {editando ? (
+            <View style={styles.card}>
+              {[
+                { campo: 'nombre', label: 'Nombre' },
+                { campo: 'apellidos', label: 'Apellidos' },
+                { campo: 'telefono', label: 'Teléfono' },
+              ].map(({ campo, label }) => (
+                <View key={campo} style={styles.inputGroup}>
+                  <Text style={styles.label}>{label}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={(form as any)[campo]}
+                    onChangeText={v => setForm(prev => ({ ...prev, [campo]: v }))}
+                    placeholderTextColor={Colors.muted}
+                  />
+                </View>
+              ))}
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={styles.label}>Peso (kg)</Text>
+                  <TextInput style={styles.input} value={form.peso} onChangeText={v => setForm(p => ({ ...p, peso: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
+                </View>
+                <View style={{ width: 12 }} />
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={styles.label}>Altura (cm)</Text>
+                  <TextInput style={styles.input} value={form.altura} onChangeText={v => setForm(p => ({ ...p, altura: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
+                </View>
+              </View>
+              <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
+                <Text style={styles.btnPrimaryText}>Guardar cambios</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.card}>
+              {[
+                { label: 'Nombre', valor: `${perfil?.nombre} ${perfil?.apellidos}` },
+                { label: 'Teléfono', valor: perfil?.telefono || '—' },
+                { label: 'Peso', valor: perfil?.peso ? `${perfil.peso} kg` : '—' },
+                { label: 'Altura', valor: perfil?.altura ? `${perfil.altura} cm` : '—' },
+              ].map(({ label, valor }) => (
+                <View key={label} style={styles.dataRow}>
+                  <Text style={styles.dataLabel}>{label}</Text>
+                  <Text style={styles.dataValor}>{valor}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.btnDanger} onPress={logout}>
+            <Text style={styles.btnDangerText}>Cerrar sesión</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    </>
   );
 }
 

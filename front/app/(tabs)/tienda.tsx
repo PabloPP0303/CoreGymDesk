@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function TiendaScreen() {
   const { token } = useAuth();
@@ -16,7 +18,7 @@ export default function TiendaScreen() {
   const [filtro, setFiltro] = useState('Todo');
   const [productoSeleccionado, setProductoSeleccionado] = useState<any>(null);
   const [modalDetalle, setModalDetalle] = useState(false);
-  
+  const { toast, mostrar, ocultar } = useToast();
 
   const categorias = ['Todo', 'Ropa', 'Accesorios', 'Nutrición'];
 
@@ -53,11 +55,11 @@ export default function TiendaScreen() {
         { producto_id: productoId, cantidad: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      window.alert('¡Pedido realizado! Pasa por el gimnasio para recogerlo y pagar.');
+      mostrar('¡Pedido realizado! Pasa por el gimnasio para recogerlo y pagar.', 'success');
       setModalDetalle(false);
       cargarProductos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al realizar el pedido');
+      mostrar(e.response?.data?.error || 'Error al realizar el pedido', 'error');
     }
   }
 

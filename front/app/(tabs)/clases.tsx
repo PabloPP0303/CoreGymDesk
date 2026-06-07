@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function ClasesScreen() {
   const { token } = useAuth();
@@ -17,6 +19,7 @@ export default function ClasesScreen() {
     return dia;
   });
   const mesActual = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  const { toast, mostrar, ocultar } = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -35,18 +38,47 @@ export default function ClasesScreen() {
     }
   }
 
-  async function reservar(claseId: number) {
+  async function reservar(clase: any) {
+    const hoy = new Date();
+    const diaSemanaHoy = hoy.getDay();
+
+    const diasMap: any = {
+      'lunes': 1, 'martes': 2, 'miercoles': 3,
+      'jueves': 4, 'viernes': 5, 'sabado': 6, 'domingo': 0
+    };
+
+    const diasClase = clase.dias || [];
+
+    for (const dia of diasClase) {
+      const diaNum = diasMap[dia];
+      const diferencia = diaNum - diaSemanaHoy;
+
+      if (diferencia < 0) {
+        mostrar('Esta clase ya pasó esta semana', 'error');
+        return;
+      }
+
+      if (diferencia > 2) {
+        mostrar('Puedes empezar a reservar las clases dos días antes', 'warning');
+        return;
+      }
+    }
+
+    const fechaClase = new Date(hoy);
+    const diaNum = diasMap[diasClase[0]];
+    fechaClase.setDate(hoy.getDate() + (diaNum - diaSemanaHoy));
+    const fecha = fechaClase.toISOString().split('T')[0];
+
     try {
-      const hoy = new Date().toISOString().split('T')[0];
       await axios.post(
         `${API_URL}/reservas`,
-        { clase_id: claseId, fecha: hoy },
+        { clase_id: clase.id, fecha },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      window.alert('¡Reserva confirmada! Te has apuntado a la clase correctamente');
+      mostrar('¡Reserva confirmada!', 'success');
       cargarClases();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'No se pudo reservar');
+      mostrar(e.response?.data?.error || 'No se pudo reservar', 'error');
     }
   }
 
@@ -59,6 +91,7 @@ export default function ClasesScreen() {
   }
 
   return (
+    <>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.titulo}>Clases</Text>
@@ -120,7 +153,7 @@ export default function ClasesScreen() {
                 </View>
                 <TouchableOpacity
                   style={llena ? styles.btnDisabled : styles.btnPrimary}
-                  onPress={() => reservar(clase.id)}
+                  onPress={() => reservar(clase)}
                   disabled={llena}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
@@ -136,6 +169,8 @@ export default function ClasesScreen() {
         )}
       </View>
     </ScrollView>
+    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    </>
   );
 }
 

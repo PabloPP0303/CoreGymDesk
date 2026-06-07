@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView,
+  StyleSheet, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { Colors } from '../../constants/theme';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -13,23 +15,25 @@ export default function LoginScreen() {
   const [cargando, setCargando] = useState(false);
   const { login, perfil } = useAuth();
   const router = useRouter();
+  const { toast, mostrar, ocultar } = useToast();
 
   async function handleLogin() {
     if (!email || !password) {
-      Alert.alert('Error', 'Rellena todos los campos');
+      mostrar('Rellena todos los campos', 'error');
       return;
     }
     try {
       setCargando(true);
       await login(email, password);
     } catch (e: any) {
-      Alert.alert('Error', e.response?.data?.error || 'Credenciales incorrectas');
+      mostrar(e.response?.data?.error || 'Credenciales incorrectas', 'error');
     } finally {
       setCargando(false);
     }
   }
 
   return (
+    <>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -87,6 +91,8 @@ export default function LoginScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    </>
   );
 }
 

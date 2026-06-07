@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView,
+  StyleSheet, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { API_URL, Colors } from '../../constants/theme';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function RegistroScreen() {
   const [form, setForm] = useState({
@@ -14,6 +16,7 @@ export default function RegistroScreen() {
   });
   const [cargando, setCargando] = useState(false);
   const router = useRouter();
+  const { toast, mostrar, ocultar } = useToast();
 
   function actualizar(campo: string, valor: string) {
     setForm(prev => ({ ...prev, [campo]: valor }));
@@ -21,23 +24,24 @@ export default function RegistroScreen() {
 
   async function handleRegistro() {
     if (!form.nombre || !form.apellidos || !form.email || !form.password) {
-      Alert.alert('Error', 'Todos los campos son obligatorios');
+      mostrar('Rellena todos los campos', 'error');
       return;
     }
     try {
       setCargando(true);
       console.log('Enviando:', form);
       await axios.post(`${API_URL}/auth/register`, form);
-      window.alert('Registro completado, ya puedes iniciar sesión');
+      mostrar('Registro completado, ya puedes iniciar sesión', 'success');
       router.replace('/(auth)/login');
     } catch (e: any) {
-      Alert.alert('Error', e.response?.data?.error || 'Error al registrarse');
+      mostrar(e.response?.data?.error || 'Error al registrarse', 'error');
     } finally {
       setCargando(false);
     }
   }
 
   return (
+    <>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -92,6 +96,8 @@ export default function RegistroScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    </>
   );
 }
 
