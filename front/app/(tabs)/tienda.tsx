@@ -71,12 +71,15 @@ export default function TiendaScreen() {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
   }
 
-  return (
-    <>
+return (
+  <>
     <ScrollView style={styles.container}>
+      {/* Header unificado con el estilo de la app */}
       <View style={styles.header}>
-        <Text style={styles.titulo}>Tienda</Text>
-        <Text style={styles.subtitulo}>Merchandising Gimnasio Combo</Text>
+        <View style={styles.headerLeftSimple}>
+          <Text style={styles.titulo}>Tienda</Text>
+          <Text style={styles.subtitulo}>Merchandising Gimnasio Combo</Text>
+        </View>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
@@ -98,24 +101,30 @@ export default function TiendaScreen() {
           productosFiltrados.map((p: any) => (
             <TouchableOpacity
               key={p.id}
-              style={styles.productoCard}
+              style={styles.cardProducto}
               onPress={() => { setProductoSeleccionado(p); setModalDetalle(true); }}
             >
-              <View style={styles.productoImg}>
+              {/* Contenedor de la Imagen / Icono con fondo protector */}
+              <View style={styles.cardImagenContainer}>
                 {p.imagen_url ? (
-                  <Image source={{ uri: p.imagen_url }} style={{ width: '100%', height: '100%', borderRadius: 10 }} resizeMode="cover" />
+                  <Image source={{ uri: p.imagen_url }} style={styles.cardImagen} resizeMode="contain" />
                 ) : (
-                  <Ionicons name={getIconoCategoria(p.categoria) as any}size={48} color={Colors.accent} />
+                  <Ionicons name={getIconoCategoria(p.categoria) as any} size={40} color={Colors.accent} />
                 )}
               </View>
-              <View style={styles.productoInfo}>
-                <Text style={styles.productoNombre} numberOfLines={1}>{p.nombre}</Text>
-                <Text style={styles.productoCategoria}>{p.categoria}</Text>
-                <Text style={styles.productoPrecio}>{p.precio}€</Text>
-                <View style={[styles.stockBadge, p.stock <= 0 && styles.stockBadgeRed]}>
-                  <Text style={[styles.stockText, p.stock <= 0 && styles.stockTextRed]}>
-                    {p.stock > 0 ? `Stock: ${p.stock}` : 'Sin stock'}
-                  </Text>
+
+              {/* Bloque inferior de detalles estilizado */}
+              <View style={styles.cardDetalles}>
+                <Text style={styles.cardCategoria}>{p.categoria.toUpperCase()}</Text>
+                <Text style={styles.cardNombre} numberOfLines={1}>{p.nombre}</Text>
+                
+                <View style={styles.cardFooter}>
+                  <Text style={styles.cardPrecio}>{p.precio}€</Text>
+                  <View style={[styles.badgeStock, { backgroundColor: p.stock > 0 ? `${Colors.green}20` : `${Colors.red}20` }]}>
+                    <Text style={[styles.badgeStockText, { color: p.stock > 0 ? Colors.green : Colors.red }]}>
+                      {p.stock > 0 ? `Stock: ${p.stock}` : 'Sin stock'}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
@@ -142,8 +151,8 @@ export default function TiendaScreen() {
             <Text style={styles.modalDesc}>{productoSeleccionado?.descripcion}</Text>
             <View style={styles.modalPrecioRow}>
               <Text style={styles.modalPrecio}>{productoSeleccionado?.precio}€</Text>
-              <View style={[styles.stockBadge, productoSeleccionado?.stock <= 0 && styles.stockBadgeRed]}>
-                <Text style={[styles.stockText, productoSeleccionado?.stock <= 0 && styles.stockTextRed]}>
+              <View style={[styles.badgeStock, { backgroundColor: productoSeleccionado?.stock > 0 ? `${Colors.green}20` : `${Colors.red}20` }]}>
+                <Text style={[styles.badgeStockText, { color: productoSeleccionado?.stock > 0 ? Colors.green : Colors.red }]}>
                   {productoSeleccionado?.stock > 0 ? `${productoSeleccionado.stock} en stock` : 'Sin stock'}
                 </Text>
               </View>
@@ -173,14 +182,15 @@ export default function TiendaScreen() {
       </Modal>
     </ScrollView>
     <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
-    </>
-  );
+  </>
+);
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
   header: {flexDirection: 'column',justifyContent: 'center',paddingHorizontal: 16,paddingTop: 20,paddingBottom: 16,width: '100%',backgroundColor: Colors.black},
+  headerLeftSimple: {flexDirection: 'column'},
   titulo: { fontSize: 24, fontWeight: '700', color: Colors.text, fontFamily: 'Inter_700Bold' },
   subtitulo: { fontSize: 12, color: Colors.muted, marginTop: 2, fontFamily: 'Inter_400Regular'},  
   filtrosRow: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
@@ -218,4 +228,14 @@ const styles = StyleSheet.create({
   btnGhostText: { color: Colors.text, fontSize: 14, fontFamily: 'Inter_400Regular' },
   btnDisabled: { backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 8, padding: 12, alignItems: 'center', flex: 1, borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' },
   btnDisabledText: { color: Colors.red, fontSize: 14 },
+  badgeStock: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  badgeStockText: { fontSize: 11, fontWeight: '600' },
+  cardImagenContainer: { height: 130, width: '100%', backgroundColor: '#161920', justifyContent: 'center', alignItems: 'center', padding: 12 },
+  cardImagen: { height: '100%', width: '100%' },
+  cardDetalles: { padding: 12, flexDirection: 'column' },
+  cardCategoria: { color: Colors.muted, fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  cardNombre: { color: Colors.text, fontSize: 15, fontWeight: '600', marginTop: 4 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  cardPrecio: { color: Colors.accent, fontSize: 18, fontWeight: '700' },
+  cardProducto: { width: '48%', backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, borderRadius: 14, overflow: 'hidden', marginBottom: 16 },
 });
