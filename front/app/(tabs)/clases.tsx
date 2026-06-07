@@ -63,6 +63,7 @@ export default function ClasesScreen() {
         <Text style={styles.titulo}>Clases</Text>
         <Text style={styles.subtitulo}>Calendario semanal</Text>
       </View>
+      <View style={styles.divisor} />
 
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calendarRow}>
       {diasSemana.map((dia, i) => {
@@ -135,9 +136,9 @@ export default function ClasesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
-  header: { padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  titulo: { fontSize: 26, fontWeight: '700', color: Colors.text },
-  subtitulo: { fontSize: 13, color: Colors.muted, marginTop: 2 },
+  header: {flexDirection: 'column',justifyContent: 'center',paddingHorizontal: 16,paddingTop: 20,paddingBottom: 16,width: '100%',backgroundColor: Colors.black},
+  titulo: { fontSize: 24, fontWeight: '700', color: Colors.text },
+  subtitulo: { fontSize: 12, color: Colors.muted, marginTop: 2 },
   calendarRow: { paddingHorizontal: 12, paddingVertical: 14, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
   diaCol: { width: 80, marginRight: 8, backgroundColor: Colors.card, borderRadius: 10, padding: 8, borderWidth: 1, borderColor: Colors.border },
   diaColHoy: { borderColor: Colors.accent },
@@ -161,4 +162,5 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
   btnDisabled: { backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 8, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' },
   btnDisabledText: { color: Colors.red, fontWeight: '700', fontSize: 14 },
+  divisor: {height: 1,width: '100%',backgroundColor: Colors.border,marginBottom: 0},
 });

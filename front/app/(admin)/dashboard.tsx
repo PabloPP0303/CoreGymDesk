@@ -45,13 +45,10 @@ export default function AdminDashboard() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerSimple}>
-        {/* Izquierda: Título y Subtítulo */}
         <View style={styles.headerLeftSimple}>
           <Text style={styles.titulo}>Panel Admin</Text>
           <Text style={styles.subtituloGimnasio}>Gimnasio Combo</Text>
         </View>
-
-        {/* Derecha: Botón Salir */}
         <TouchableOpacity style={styles.btnSalir} onPress={logout}>
           <Text style={styles.btnSalirText}>Salir</Text>
         </TouchableOpacity>

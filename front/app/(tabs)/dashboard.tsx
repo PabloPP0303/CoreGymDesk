@@ -40,13 +40,15 @@ export default function DashboardScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.saludo}>Bienvenido, {perfil?.nombre}</Text>
-          <Text style={styles.fecha}>{fecha.charAt(0).toUpperCase() + fecha.slice(1)}</Text>
+        <View style={styles.headerLeftSimple}>
+          <Text style={styles.titulo}>Bienvenido, {perfil?.nombre}</Text>
+          <Text style={styles.subtitulo}>{fecha.charAt(0).toUpperCase() + fecha.slice(1)}</Text>
         </View>
-        <TouchableOpacity onPress={logout}>
-          <Text style={styles.logout}>Salir</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRightSimple}>
+          <TouchableOpacity style={styles.btnSalir} onPress={logout}>
+            <Text style={styles.btnSalirText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.statsRow}>
@@ -121,7 +123,9 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  header: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center',paddingHorizontal: 16,paddingVertical: 14, width: '100%',backgroundColor: Colors.black, },
+  headerLeftSimple: {flexDirection: 'column'},
+  headerRightSimple: {justifyContent: 'center',alignItems: 'flex-end'},
   saludo: { fontSize: 20, fontWeight: '700', color: Colors.text },
   fecha: { fontSize: 12, color: Colors.muted, marginTop: 2 },
   logout: { fontSize: 13, color: Colors.muted },
@@ -129,10 +133,8 @@ const styles = StyleSheet.create({
   statCard: { flex: 1, backgroundColor: Colors.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: Colors.border },
   statNum: { fontSize: 28, fontWeight: '700', color: Colors.text },
   statLabel: { fontSize: 11, color: Colors.muted, marginTop: 4 },
-  section: { padding: 16, paddingTop: 8 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 15, fontWeight: '600', color: Colors.text },
-  verTodas: { fontSize: 12, color: Colors.accent },
+  section: { paddingHorizontal: 16, marginTop: 16, width: '100%' },  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: Colors.text, marginBottom: 12 },  verTodas: { fontSize: 12, color: Colors.accent },
   emptyCard: { backgroundColor: Colors.card, borderRadius: 12, padding: 20, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
   emptyText: { color: Colors.muted, fontSize: 13, marginBottom: 12 },
   reservaCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: Colors.card, borderRadius: 10, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: Colors.border },
@@ -140,9 +142,12 @@ const styles = StyleSheet.create({
   reservaMeta: { fontSize: 11, color: Colors.muted, marginTop: 2 },
   badgeAccent: { backgroundColor: 'rgba(200,241,53,0.15)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(200,241,53,0.3)' },
   badgeAccentText: { fontSize: 11, color: Colors.accent, fontWeight: '600' },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  quickBtn: { backgroundColor: Colors.card, borderRadius: 10, padding: 14, borderWidth: 1, borderColor: Colors.border, width: '47%', alignItems: 'center' },
-  quickBtnText: { color: Colors.text, fontSize: 13, fontWeight: '500' },
-  btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center' },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' },
+  quickBtn: { width: '48%', backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingVertical: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  quickBtnText: { color: Colors.text, fontWeight: '600', fontSize: 15 },  btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center' },
   btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
+  btnSalir: {paddingHorizontal: 12,paddingVertical: 8,},
+  btnSalirText: {color: Colors.muted, fontSize: 15},
+  titulo: {fontSize: 24,fontWeight: 'bold',color: Colors.text},
+  subtitulo: {fontSize: 14,color: Colors.muted, marginTop: 2},
 });
