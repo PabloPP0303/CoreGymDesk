@@ -103,10 +103,10 @@ const styles = StyleSheet.create({
   logo: { fontSize: 36, fontWeight: '700', color: Colors.accent, letterSpacing: 2 },
   tagline: { fontSize: 13, color: Colors.muted, marginTop: 4 },
   form: { backgroundColor: Colors.card, borderRadius: 16, padding: 24, borderWidth: 1, borderColor: Colors.border },
-  titulo: { fontSize: 22, fontWeight: '600', color: Colors.text, marginBottom: 4 },
-  subtitulo: { fontSize: 13, color: Colors.muted, marginBottom: 24 },
+  titulo: { fontSize: 22, fontWeight: '600', color: Colors.text, marginBottom: 4, fontFamily: 'Inter_700Bold'},
+  subtitulo: { fontSize: 13, color: Colors.muted, marginBottom: 24, fontFamily: 'Inter_400Regular' },
   inputGroup: { marginBottom: 16 },
-  label: { fontSize: 12, color: Colors.muted, marginBottom: 6, fontWeight: '500' },
+  label: { fontSize: 12, color: Colors.muted, marginBottom: 6, fontWeight: '500', fontFamily: 'Inter_400Regular' },
   input: {
     backgroundColor: Colors.dark,
     borderWidth: 1,
@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     padding: 12,
     color: Colors.text,
     fontSize: 14,
+    fontFamily: 'Inter_400Regular'
   },
   btnPrimary: {
     backgroundColor: Colors.accent,
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
   },
-  btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 15 },
+  btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 15, fontFamily: 'Inter_700Bold' },
   linkText: { textAlign: 'center', fontSize: 13, color: Colors.muted },
   linkAccent: { color: Colors.accent },
 });
