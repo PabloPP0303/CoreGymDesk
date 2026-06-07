@@ -10,6 +10,8 @@ import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 export default function AdminCuotasScreen() {
   const { token } = useAuth();
@@ -20,6 +22,7 @@ export default function AdminCuotasScreen() {
   const [modal, setModal] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<any>(null);
   const {toast, mostrar, ocultar} = useToast();
+  const { confirmar, pedir, cerrar } = useConfirmar();
   const [form, setForm] = useState({
     importe: '30',
     fecha_pago: new Date().toISOString().split('T')[0],
@@ -85,6 +88,21 @@ export default function AdminCuotasScreen() {
       mostrar(e.response?.data?.error || 'Error al guardar cuota', 'error');
     }
   }
+    async function cancelarCuota(id: number) {
+        pedir('¿Cancelar esta cuota?','Esta acción no se puede deshacer.', async () => {
+        try {
+            await axios.put(
+                `${API_URL}/cuotas?id=${id}`,
+                { estado: 'vencida' },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            mostrar('Cuota cancelada correctamente', 'success');
+            cargarDatos();
+        } catch (e: any) {
+            mostrar(e.response?.data?.error || 'Error al cancelar cuota', 'error');
+        }
+        }, true);
+    }
 
   async function marcarPagada(cuota: any) {
     const hoy = new Date();
@@ -132,176 +150,177 @@ export default function AdminCuotasScreen() {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
   }
 
-  return (
-      <>
-          <ScrollView style={styles.container}>
-              <View style={styles.header}>
-                  <Text style={styles.titulo}>Cuotas</Text>
-                  <Text style={styles.subtitulo}>Control de membresías</Text>
-              </View>
+    return (
+        <>
+            <ScrollView style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.titulo}>Cuotas</Text>
+                    <Text style={styles.subtitulo}>Control de membresías</Text>
+                </View>
 
-              <View style={styles.statsRow}>
-                  <View style={styles.statCard}>
-                      <Text style={[styles.statNum, { color: Colors.green }]}>{alDia}</Text>
-                      <Text style={styles.statLabel}>Al día</Text>
-                  </View>
-                  <View style={styles.statCard}>
-                      <Text style={[styles.statNum, { color: Colors.red }]}>{vencidas}</Text>
-                      <Text style={styles.statLabel}>Vencidas</Text>
-                  </View>
-                  <View style={styles.statCard}>
-                      <Text style={[styles.statNum, { color: Colors.orange }]}>{pendientes}</Text>
-                      <Text style={styles.statLabel}>Pendientes</Text>
-                  </View>
-              </View>
+                <View style={styles.statsRow}>
+                    <View style={styles.statCard}>
+                        <Text style={[styles.statNum, { color: Colors.green }]}>{alDia}</Text>
+                        <Text style={styles.statLabel}>Al día</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={[styles.statNum, { color: Colors.red }]}>{vencidas}</Text>
+                        <Text style={styles.statLabel}>Vencidas</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={[styles.statNum, { color: Colors.orange }]}>{pendientes}</Text>
+                        <Text style={styles.statLabel}>Pendientes</Text>
+                    </View>
+                </View>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
-                  {['Todos', 'Al día', 'Vencidas', 'Pendientes'].map(f => (
-                      <TouchableOpacity
-                          key={f}
-                          style={[styles.filtroBadge, filtro === f && styles.filtroBadgeActive]}
-                          onPress={() => setFiltro(f)}
-                      >
-                          <Text style={[styles.filtroText, filtro === f && styles.filtroTextActive]}>{f}</Text>
-                      </TouchableOpacity>
-                  ))}
-              </ScrollView>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
+                    {['Todos', 'Al día', 'Vencidas', 'Pendientes'].map(f => (
+                        <TouchableOpacity
+                            key={f}
+                            style={[styles.filtroBadge, filtro === f && styles.filtroBadgeActive]}
+                            onPress={() => setFiltro(f)}
+                        >
+                            <Text style={[styles.filtroText, filtro === f && styles.filtroTextActive]}>{f}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
 
-              <View style={styles.section}>
-                  {cuotasFiltradas.length === 0 ? (
-                      <View style={styles.emptyCard}>
-                          <Text style={styles.emptyText}>No hay cuotas en esta categoría</Text>
-                      </View>
-                  ) : (
-                      cuotasFiltradas.map((cuota: any) => {
-                          const usuario = usuarios.find(u => u.id === cuota.usuario_id);
-                          const badge = getEstadoBadge(cuota.estado);
-                          return (
-                              <View key={cuota.id} style={styles.cuotaCard}>
-                                  <View style={styles.cuotaTop}>
-                                      <View style={styles.avatar}>
-                                          <Text style={styles.avatarText}>
-                                              {usuario?.nombre?.[0]}{usuario?.apellidos?.[0]}
-                                          </Text>
-                                      </View>
-                                      <View style={{ flex: 1 }}>
-                                          <Text style={styles.usuarioNombre}>{usuario?.nombre} {usuario?.apellidos}</Text>
-                                          <Text style={styles.cuotaMeta}>
-                                              {cuota.importe}€ · Vence: {cuota.fecha_vencimiento || 'Sin fecha'}
-                                          </Text>
-                                      </View>
-                                      <View style={[styles.badge, { backgroundColor: badge.bg, borderColor: badge.border }]}>
-                                          <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
-                                      </View>
-                                  </View>
-                                  <View style={styles.cuotaAcciones}>
-                                      {cuota.estado !== 'al_dia' && (
-                                          <TouchableOpacity
-                                              style={[
-                                                  styles.btnPagar,
-                                                  cuota.estado === 'vencida' && { backgroundColor: 'rgba(239,68,68,0.15)', borderColor: 'rgba(239,68,68,0.3)' }
-                                              ]}
-                                              onPress={() => marcarPagada(cuota)}
-                                          >
-                                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                  {cuota.estado === 'vencida' && (
-                                                      <Ionicons name="warning-outline" size={14} color={Colors.red} />
-                                                  )}
-                                                  <Text style={[
-                                                      styles.btnPagarText,
-                                                      cuota.estado === 'vencida' && { color: Colors.red }
-                                                  ]}>
-                                                      {cuota.estado === 'vencida' ? 'Cuota vencida - Marcar pagada' : 'Marcar pagada'}
-                                                  </Text>
-                                              </View>
-                                          </TouchableOpacity>
-                                      )}
-                                  </View>
-                              </View>
-                          );
-                      })
-                  )}
-              </View>
+                <View style={styles.section}>
+                    {cuotasFiltradas.length === 0 ? (
+                        <View style={styles.emptyCard}>
+                            <Text style={styles.emptyText}>No hay cuotas en esta categoría</Text>
+                        </View>
+                    ) : (
+                        cuotasFiltradas.map((cuota: any) => {
+                            const usuario = usuarios.find(u => u.id === cuota.usuario_id);
+                            const badge = getEstadoBadge(cuota.estado);
+                            return (
+                                <View key={cuota.id} style={styles.cuotaCard}>
+                                    <View style={styles.cuotaTop}>
+                                        <View style={styles.avatar}>
+                                            <Text style={styles.avatarText}>
+                                                {usuario?.nombre?.[0]}{usuario?.apellidos?.[0]}
+                                            </Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.usuarioNombre}>{usuario?.nombre} {usuario?.apellidos}</Text>
+                                            <Text style={styles.cuotaMeta}>
+                                                {cuota.importe}€ · Vence: {cuota.fecha_vencimiento || 'Sin fecha'}
+                                            </Text>
+                                        </View>
+                                        <View style={[styles.badge, { backgroundColor: badge.bg, borderColor: badge.border }]}>
+                                            <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.cuotaAcciones}>
+                                        {cuota.estado !== 'al_dia' && (
+                                            <TouchableOpacity style={styles.btnPagar} onPress={() => marcarPagada(cuota)}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                    {cuota.estado === 'vencida' && (
+                                                        <Ionicons name="warning-outline" size={14} color={Colors.accent} />
+                                                    )}
+                                                    <Text style={[styles.btnPagarText, cuota.estado === 'vencida' && { color: Colors.accent }]}>
+                                                        {cuota.estado === 'vencida' ? 'Cuota vencida - Marcar pagada' : 'Marcar pagada'}
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        )}
+                                        <TouchableOpacity style={styles.btnEditar} onPress={() => abrirModal(cuota)}>
+                                            <Text style={styles.btnEditarText}>Editar</Text>
+                                        </TouchableOpacity>
+                                        {cuota.estado === 'al_dia' && (
+                                            <TouchableOpacity style={styles.btnEliminar} onPress={() => cancelarCuota(cuota.id)}>
+                                                <Text style={styles.btnEliminarText}>Cancelar cuota</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                </View>
+                            );
+                        })
+                    )}
+                </View>
 
-              <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Usuarios sin cuota asignada</Text>
-                  {usuarios
-                      .filter(u => u.rol === 'cliente' && !cuotas.find(c => c.usuario_id === u.id))
-                      .map(u => (
-                          <View key={u.id} style={styles.sinCuotaCard}>
-                              <View style={styles.avatar}>
-                                  <Text style={styles.avatarText}>{u.nombre?.[0]}{u.apellidos?.[0]}</Text>
-                              </View>
-                              <Text style={[styles.usuarioNombre, { flex: 1 }]}>{u.nombre} {u.apellidos}</Text>
-                              <TouchableOpacity
-                                  style={styles.btnAsignar}
-                                  onPress={() => {
-                                      setUsuarioSeleccionado(u);
-                                      setForm({ importe: '30', fecha_pago: new Date().toISOString().split('T')[0], fecha_vencimiento: '' });
-                                      setModal(true);
-                                  }}
-                              >
-                                  <Text style={styles.btnAsignarText}>Asignar cuota</Text>
-                              </TouchableOpacity>
-                          </View>
-                      ))}
-              </View>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Usuarios sin cuota asignada</Text>
+                    {usuarios
+                        .filter(u => u.rol === 'cliente' && !cuotas.find(c => c.usuario_id === u.id))
+                        .map(u => (
+                            <View key={u.id} style={styles.sinCuotaCard}>
+                                <View style={styles.avatar}>
+                                    <Text style={styles.avatarText}>{u.nombre?.[0]}{u.apellidos?.[0]}</Text>
+                                </View>
+                                <Text style={[styles.usuarioNombre, { flex: 1 }]}>{u.nombre} {u.apellidos}</Text>
+                                <TouchableOpacity
+                                    style={styles.btnAsignar}
+                                    onPress={() => {
+                                        setUsuarioSeleccionado(u);
+                                        setForm({ importe: '30', fecha_pago: new Date().toISOString().split('T')[0], fecha_vencimiento: '' });
+                                        setModal(true);
+                                    }}
+                                >
+                                    <Text style={styles.btnAsignarText}>Asignar cuota</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                </View>
 
-              <Modal visible={modal} transparent animationType="slide">
-                  <View style={styles.modalOverlay}>
-                      <View style={styles.modalContent}>
-                          <Text style={styles.modalTitulo}>
-                              Cuota de {usuarioSeleccionado?.nombre} {usuarioSeleccionado?.apellidos}
-                          </Text>
+                <Modal visible={modal} transparent animationType="slide">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitulo}>
+                                Cuota de {usuarioSeleccionado?.nombre} {usuarioSeleccionado?.apellidos}
+                            </Text>
 
-                          <View style={styles.inputGroup}>
-                              <Text style={styles.label}>Importe (€)</Text>
-                              <TextInput
-                                  style={styles.input}
-                                  value={form.importe}
-                                  onChangeText={v => setForm(p => ({ ...p, importe: v }))}
-                                  keyboardType="numeric"
-                                  placeholderTextColor={Colors.muted}
-                              />
-                          </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Importe (€)</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={form.importe}
+                                    onChangeText={v => setForm(p => ({ ...p, importe: v }))}
+                                    keyboardType="numeric"
+                                    placeholderTextColor={Colors.muted}
+                                />
+                            </View>
 
-                          <View style={styles.inputGroup}>
-                              <Text style={styles.label}>Fecha de pago</Text>
-                              <TextInput
-                                  style={styles.input}
-                                  value={form.fecha_pago}
-                                  onChangeText={v => setForm(p => ({ ...p, fecha_pago: v }))}
-                                  placeholder="2026-06-01"
-                                  placeholderTextColor={Colors.muted}
-                              />
-                          </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Fecha de pago</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={form.fecha_pago}
+                                    onChangeText={v => setForm(p => ({ ...p, fecha_pago: v }))}
+                                    placeholder="2026-06-01"
+                                    placeholderTextColor={Colors.muted}
+                                />
+                            </View>
 
-                          <View style={styles.inputGroup}>
-                              <Text style={styles.label}>Fecha de vencimiento *</Text>
-                              <TextInput
-                                  style={styles.input}
-                                  value={form.fecha_vencimiento}
-                                  onChangeText={v => setForm(p => ({ ...p, fecha_vencimiento: v }))}
-                                  placeholder="2026-07-01"
-                                  placeholderTextColor={Colors.muted}
-                              />
-                          </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Fecha de vencimiento *</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={form.fecha_vencimiento}
+                                    onChangeText={v => setForm(p => ({ ...p, fecha_vencimiento: v }))}
+                                    placeholder="2026-07-01"
+                                    placeholderTextColor={Colors.muted}
+                                />
+                            </View>
 
-                          <View style={styles.modalBtns}>
-                              <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
-                                  <Text style={styles.btnGhostText}>Cancelar</Text>
-                              </TouchableOpacity>
-                              <TouchableOpacity style={styles.btnPrimary} onPress={guardarCuota}>
-                                  <Text style={styles.btnPrimaryText}>Guardar</Text>
-                              </TouchableOpacity>
-                          </View>
-                      </View>
-                  </View>
-              </Modal>
-          </ScrollView>
-          <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
-      </>
-  );
+                            <View style={styles.modalBtns}>
+                                <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
+                                    <Text style={styles.btnGhostText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.btnPrimary} onPress={guardarCuota}>
+                                    <Text style={styles.btnPrimaryText}>Guardar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            </ScrollView>
+            <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+            <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+                peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
+        </>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -332,10 +351,12 @@ const styles = StyleSheet.create({
   badge: { borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1 },
   badgeText: { fontSize: 11, fontWeight: '600' },
   cuotaAcciones: { flexDirection: 'row', gap: 8 },
-  btnPagar: { backgroundColor: 'rgba(34,197,94,0.15)', borderRadius: 6, padding: 8, borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)', flex: 1, alignItems: 'center' },
-  btnPagarText: { color: Colors.green, fontSize: 12, fontWeight: '600' },
+  btnPagar: { backgroundColor: 'rgba(255, 232, 22, 0.36)', borderRadius: 6, padding: 8, borderWidth: 1, borderColor: 'rgba(255, 232, 22, 0.36)', alignSelf: 'flex-start' },  
+  btnPagarText: { color: Colors.black, fontSize: 12, fontWeight: '600' },
   btnEditar: { backgroundColor: 'rgba(59,130,246,0.15)', borderRadius: 6, padding: 8, borderWidth: 1, borderColor: 'rgba(59,130,246,0.3)', alignItems: 'center', paddingHorizontal: 16 },
   btnEditarText: { color: Colors.blue, fontSize: 12 },
+  btnEliminar: { backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: 6, padding: 8, borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)', alignItems: 'center' },
+  btnEliminarText: { color: Colors.red, fontSize: 12 },
   sinCuotaCard: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.card, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: Colors.border },
   btnAsignar: { backgroundColor: 'rgba(200,241,53,0.12)', borderRadius: 6, padding: 8, borderWidth: 1, borderColor: 'rgba(200,241,53,0.3)' },
   btnAsignarText: { color: Colors.accent, fontSize: 12, fontWeight: '600' },

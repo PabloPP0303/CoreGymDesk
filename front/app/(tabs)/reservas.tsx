@@ -10,6 +10,8 @@ import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 export default function MisReservasScreen() {
   const { token } = useAuth();
@@ -18,6 +20,7 @@ export default function MisReservasScreen() {
   const [cargando, setCargando] = useState(true);
   const [verHistorial, setVerHistorial] = useState(false);
   const { toast, mostrar, ocultar } = useToast();
+  const { confirmar, pedir, cerrar } = useConfirmar();
 
   useFocusEffect(
     useCallback(() => {
@@ -45,16 +48,16 @@ export default function MisReservasScreen() {
   }
 
   async function cancelarReserva(id: number) {
-    const confirmar = window.confirm('¿Cancelar esta reserva?');
-    if (!confirmar) return;
-    try {
-      await axios.delete(`${API_URL}/reservas?id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      cargarReservas();
-    } catch (e: any) {
-      mostrar(e.response?.data?.error || 'Error al cancelar reserva', 'error');
-    }
+    pedir('¿Cancelar esta reserva?', 'Esta acción no se puede deshacer.', async () => {
+      try {
+        await axios.delete(`${API_URL}/reservas?id=${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        cargarReservas();
+      } catch (e: any) {
+        mostrar(e.response?.data?.error || 'Error al cancelar reserva', 'error');
+      }
+    }, true);
   }
 
   function getDiaSemana(fecha: string) {
@@ -67,6 +70,7 @@ export default function MisReservasScreen() {
   }
 
   return (
+    <>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View>
@@ -151,6 +155,10 @@ export default function MisReservasScreen() {
         )}
       </View>
     </ScrollView>
+    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+      peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
+    </>
   );
 }
 

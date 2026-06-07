@@ -9,6 +9,8 @@ import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '@/hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 export default function AdminUsuariosScreen() {
   const { token } = useAuth();
@@ -24,7 +26,7 @@ export default function AdminUsuariosScreen() {
   const [rutinasUsuario, setRutinasUsuario] = useState<any[]>([]);
   const [usuarioVerRutinas, setUsuarioVerRutinas] = useState<any>(null);
   const { toast, mostrar, ocultar } = useToast();
-  
+  const { confirmar, pedir, cerrar } = useConfirmar();
   
   const [modalEjercicios, setModalEjercicios] = useState(false);
   const [rutinaCreada, setRutinaCreada] = useState<any>(null);
@@ -61,34 +63,32 @@ export default function AdminUsuariosScreen() {
   }
 
   async function eliminarUsuario(id: string, nombre: string) {
-    const confirmar = window.confirm(`¿Eliminar al usuario ${nombre}? Esta acción no se puede deshacer.`);
-    if (!confirmar) return;
-
-    try {
-      await axios.delete(`${API_URL}/usuarios?id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      mostrar('Usuario eliminado correctamente', 'success');
-      cargarDatos();
-    } catch (e: any) {
+    pedir(`¿Eliminar al usuario ${nombre}?`, 'Esta acción no se puede deshacer.', async () => {
+      try {
+        await axios.delete(`${API_URL}/usuarios?id=${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        mostrar('Usuario eliminado correctamente', 'success');
+        cargarDatos();
+      } catch (e: any) {
         mostrar(e.response?.data?.error || 'Error al eliminar usuario', 'error');
-    }
+      }
+    }, true);
   }
 
-  async function cambiarRol(id: string, rolActual: string) {
-    const nuevoRol = rolActual === 'admin' ? 'cliente' : 'admin';
-    const confirmar = window.confirm(`¿Cambiar rol a ${nuevoRol}?`);
-    if (!confirmar) return;
-
-    try {
-      await axios.put(`${API_URL}/usuarios?id=${id}`, { rol: nuevoRol }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      cargarDatos();
-    } catch (e: any) {
-      mostrar(e.response?.data?.error || 'Error al cambiar rol', 'error');
+    async function cambiarRol(id: string, rolActual: string) {
+        const nuevoRol = rolActual === 'admin' ? 'cliente' : 'admin';
+        pedir(`¿Cambiar rol a ${nuevoRol}?`, `El usuario pasará a ser ${nuevoRol}.`, async () => {
+            try {
+                await axios.put(`${API_URL}/usuarios?id=${id}`, { rol: nuevoRol }, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                cargarDatos();
+            } catch (e: any) {
+                mostrar(e.response?.data?.error || 'Error al cambiar rol', 'error');
+            }
+        }, true);
     }
-  }
 
   async function asignarRutina() {
     if (!nombreRutina.trim()) {
@@ -122,7 +122,7 @@ export default function AdminUsuariosScreen() {
         }
     }
     async function eliminarRutinaUsuario(id: number) {
-        const confirmar = window.confirm('¿Eliminar esta rutina?');
+        pedir(`¿Eliminar esta rutina?`, 'Esta acción no se puede deshacer.', async () => {
         if (!confirmar) return;
         try {
             await axios.delete(`${API_URL}/rutinas?id=${id}`, {
@@ -132,7 +132,9 @@ export default function AdminUsuariosScreen() {
         } catch (e: any) {
             mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
         }
+        }, true);
     }
+
     async function eliminarEjercicioDeRutina(id: number, rutina: any) {
         try {
             await axios.delete(`${API_URL}/rutinas/ejercicio?id=${id}`, {
@@ -364,6 +366,8 @@ export default function AdminUsuariosScreen() {
                 </Modal>
             </ScrollView>
             <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+            <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+                peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
         </>
     );
 }

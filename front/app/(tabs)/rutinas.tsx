@@ -9,6 +9,8 @@ import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 const DIAS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 const DIAS_LABEL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -31,6 +33,7 @@ export default function RutinasScreen() {
     repeticiones: '10',
   });
   const { toast, mostrar, ocultar } = useToast();
+  const { confirmar, pedir, cerrar } = useConfirmar();
 
   const [modalEditar, setModalEditar] = useState(false);
   const [ejercicioEditando, setEjercicioEditando] = useState<any>(null);
@@ -77,8 +80,7 @@ export default function RutinasScreen() {
   }
 
   async function eliminarRutina(id: number) {
-    const confirmar = window.confirm('¿Eliminar esta rutina?');
-    if (!confirmar) return;
+    pedir('¿Eliminar esta rutina?', 'Esta acción no se puede deshacer.', async () => {
     try {
       await axios.delete(`${API_URL}/rutinas?id=${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -87,6 +89,7 @@ export default function RutinasScreen() {
     } catch (e: any) {
       mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
     }
+  }, true);
   }
 
   async function añadirEjercicio() {
@@ -148,6 +151,7 @@ export default function RutinasScreen() {
   }
 
   return (
+    <>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeftSimple}>
@@ -374,6 +378,10 @@ export default function RutinasScreen() {
         </View>
       </Modal>
     </ScrollView>
+    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+      peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
+    </>
   );
 }
 
