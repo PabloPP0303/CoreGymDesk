@@ -81,6 +81,10 @@ export default function AdminClasesScreen() {
   }
 
     async function guardar() {
+        if (form.dias.length === 0) {
+            mostrar('Selecciona al menos un día para la clase', 'error');
+            return;
+        }
 
         if (!form.nombre || !form.sala || !form.hora_inicio || !form.hora_fin) {
             mostrar('Rellena todos los campos obligatorios', 'error');

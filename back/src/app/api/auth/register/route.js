@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { corsHeaders } from '@/app/lib/helpers';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
 
-const supabasePublic = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -45,7 +44,7 @@ export async function POST(req) {
     }
 
     // Crear usuario en Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
+    const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
@@ -71,6 +70,20 @@ export async function POST(req) {
         { status: 500, headers: corsHeaders }
       );
     }
+
+    // Enviar email de bienvenida
+    await resend.emails.send({
+      from: 'CoreGymDesk <onboarding@resend.dev>',
+      to: email,
+      subject: '¡Bienvenido a CoreGymDesk!',
+      html: `
+    <h1>¡Hola ${nombre}!</h1>
+    <p>Tu cuenta en CoreGymDesk ha sido creada correctamente.</p>
+    <p>Ya puedes acceder a la app y empezar a reservar clases.</p>
+    <br/>
+    <p>Gimnasio Combo - El Cuervo</p>
+  `,
+    });
 
     return NextResponse.json(
       { message: 'Usuario registrado correctamente', user: data.user },

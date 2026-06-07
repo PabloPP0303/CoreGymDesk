@@ -49,7 +49,12 @@ export default function DashboardScreen() {
       });
       setCuota(res.data);
     } catch (e) {
-      console.error(e);
+      const error = e as any;
+      if (error.response?.status === 404) {
+        setCuota(null);
+      } else {
+        console.error(e);
+      }
     }
   }
 
