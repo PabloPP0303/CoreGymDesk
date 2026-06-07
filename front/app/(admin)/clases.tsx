@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 
 
@@ -32,7 +34,7 @@ export default function AdminClasesScreen() {
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState(formVacio);
   const { toast, mostrar, ocultar } = useToast();
-
+  const { confirmar, pedir, cerrar } = useConfirmar();
 
 
 
@@ -81,6 +83,10 @@ export default function AdminClasesScreen() {
   }
 
     async function guardar() {
+        if (form.dias.length === 0) {
+            mostrar('Selecciona al menos un día para la clase', 'error');
+            return;
+        }
 
         if (!form.nombre || !form.sala || !form.hora_inicio || !form.hora_fin) {
             mostrar('Rellena todos los campos obligatorios', 'error');
@@ -131,17 +137,23 @@ export default function AdminClasesScreen() {
     }
 
     async function eliminar(id: number) {
-        const confirmar = window.confirm('¿Eliminar esta clase?');
-        if (!confirmar) return;
-        
-        try {
-            await axios.delete(`${API_URL}/clases/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            });
-            cargarClases();
-        } catch (e: any) {
-            mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
-        }
+        pedir(
+            'Eliminar clase',
+            '¿Estás seguro de que quieres eliminar esta clase?',
+            async () => {
+                try {
+                    await axios.delete(`${API_URL}/clases/${id}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    mostrar('Clase eliminada correctamente', 'success');
+                    cargarClases();
+                } catch (e: any) {
+                    mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
+                }
+            },
+            true,
+            'Eliminar'
+        );
     }
 
   if (cargando) {
@@ -149,6 +161,7 @@ export default function AdminClasesScreen() {
   }
 
     return (
+        <>
             <ScrollView style={styles.container}>
                 <View style={styles.headerSimple}>
                     <View style={styles.headerLeftSimple}>
@@ -260,6 +273,10 @@ export default function AdminClasesScreen() {
                     <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
                 </Modal>
             </ScrollView>
+            <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+            <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+                peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
+            </>
   );
 }
 

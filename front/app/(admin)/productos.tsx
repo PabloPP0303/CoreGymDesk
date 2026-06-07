@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 const supabase = createClient(
   process.env.EXPO_PUBLIC_SUPABASE_URL!,
@@ -42,6 +44,7 @@ export default function AdminProductosScreen() {
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [verPedidos, setVerPedidos] = useState(false);
   const { toast, mostrar, ocultar } = useToast();
+  const { confirmar, pedir, cerrar } = useConfirmar();
 
   useFocusEffect(
     useCallback(() => {
@@ -152,18 +155,18 @@ export default function AdminProductosScreen() {
     }
   }
 
-  async function eliminar(id: number, nombre: string) {
-    const confirmar = window.confirm(`¿Eliminar "${nombre}"?`);
-    if (!confirmar) return;
-    try {
-      await axios.delete(`${API_URL}/productos?id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      cargarProductos();
-    } catch (e: any) {
-      mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
+    async function eliminar(id: number, nombre: string) {
+        pedir(`¿Eliminar "${nombre}"?`, 'Esta acción no se puede deshacer.', async () => {
+            try {
+                await axios.delete(`${API_URL}/productos?id=${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                cargarProductos();
+            } catch (e: any) {
+                mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
+            }
+        }, true);
     }
-  }
 
   if (cargando) {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
@@ -341,6 +344,8 @@ export default function AdminProductosScreen() {
                 </Modal>
             </ScrollView>
             <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+            <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+                peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
         </>
     );
 }

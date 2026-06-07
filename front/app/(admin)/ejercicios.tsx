@@ -12,6 +12,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Ionicons } from '@expo/vector-icons';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { Confirmar } from '../../notificaciones/Confirmacion';
+import { useConfirmar } from '../../hooks/useConfirmar';
 
 
 const supabase = createClient(
@@ -40,7 +42,7 @@ export default function AdminEjerciciosScreen() {
   const [pagina, setPagina] = useState(1);
   const ITEMS_POR_PAGINA = 10;
   const { toast, mostrar, ocultar } = useToast();
-  
+  const { confirmar, pedir, cerrar } = useConfirmar();
 
   useFocusEffect(
     useCallback(() => {
@@ -96,16 +98,16 @@ export default function AdminEjerciciosScreen() {
   }
 
   async function eliminar(id: number, nombre: string) {
-    const confirmar = window.confirm(`¿Eliminar "${nombre}"?`);
-    if (!confirmar) return;
-    try {
-      await axios.delete(`${API_URL}/ejercicios?id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      cargarEjercicios();
-    } catch (e: any) {
-      mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
-    }
+    pedir(`¿Eliminar "${nombre}"?`, 'Esta acción no se puede deshacer.', async () => {
+      try {
+        await axios.delete(`${API_URL}/ejercicios?id=${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        cargarEjercicios();
+      } catch (e: any) {
+        mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
+      }
+    }, true);
   }
 
   async function subirImagen() {
@@ -326,6 +328,8 @@ export default function AdminEjerciciosScreen() {
                 </Modal>
             </ScrollView>
             <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+            <Confirmar visible={confirmar.visible} titulo={confirmar.titulo} mensaje={confirmar.mensaje} onConfirmar={() => { confirmar.onConfirmar(); cerrar(); }} onCancelar={cerrar}
+                peligroso={confirmar.peligroso} textoConfirmar={confirmar.textoConfirmar}/>
         </>
   );
 }

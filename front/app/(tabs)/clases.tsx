@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Modal } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
@@ -20,6 +20,8 @@ export default function ClasesScreen() {
   });
   const mesActual = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
   const { toast, mostrar, ocultar } = useToast();
+  const [modalConfirmar, setModalConfirmar] = useState(false);
+  const [claseAReservar, setClaseAReservar] = useState<any>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -153,7 +155,7 @@ export default function ClasesScreen() {
                 </View>
                 <TouchableOpacity
                   style={llena ? styles.btnDisabled : styles.btnPrimary}
-                  onPress={() => reservar(clase)}
+                  onPress={() => { setClaseAReservar(clase); setModalConfirmar(true); }}
                   disabled={llena}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
@@ -168,6 +170,29 @@ export default function ClasesScreen() {
           })
         )}
       </View>
+        <Modal visible={modalConfirmar} transparent animationType="fade">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+            <View style={{ backgroundColor: Colors.card, borderRadius: 16, padding: 24, borderWidth: 1, borderColor: Colors.border, width: '100%' }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.text, marginBottom: 8 }}>Confirmar reserva</Text>
+              <Text style={{ fontSize: 14, color: Colors.muted, marginBottom: 4 }}>{claseAReservar?.nombre}</Text>
+              <Text style={{ fontSize: 13, color: Colors.muted, marginBottom: 20 }}>{claseAReservar?.sala} · {claseAReservar?.hora_inicio} – {claseAReservar?.hora_fin}</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  style={{ flex: 1, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center' }}
+                  onPress={() => setModalConfirmar(false)}
+                >
+                  <Text style={{ color: Colors.text, fontSize: 14 }}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 1, backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center' }}
+                  onPress={() => { setModalConfirmar(false); reservar(claseAReservar); }}
+                >
+                  <Text style={{ color: Colors.black, fontWeight: '700', fontSize: 14 }}>Confirmar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
     </ScrollView>
     <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
     </>
