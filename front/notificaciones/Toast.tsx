@@ -45,6 +45,6 @@ export function Toast({ visible, mensaje, tipo = 'info', onHide }: ToastProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { position: 'absolute', bottom: 80, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, borderWidth: 1, zIndex: 99999, elevation: 99999 },
+  container: { position: 'absolute',alignSelf: 'center', bottom: 100, maxWidth: 370, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, borderWidth: 1, zIndex: 99999, elevation: 99999 },
   texto: { fontSize: 13, fontWeight: '500', flex: 1 },
 });
