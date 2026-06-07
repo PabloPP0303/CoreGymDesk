@@ -32,6 +32,10 @@ export default function AdminClasesScreen() {
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState(formVacio);
   const { toast, mostrar, ocultar } = useToast();
+
+
+
+
   useEffect(() => {
     cargarClases();
   }, []);
@@ -76,40 +80,55 @@ export default function AdminClasesScreen() {
     }));
   }
 
-  async function guardar() {
-    
-    if (!form.nombre || !form.sala || !form.hora_inicio || !form.hora_fin) {
-      mostrar('Rellena todos los campos obligatorios', 'error');
-      return;
-    }
-    if (parseInt(form.aforo_maximo) > 30) {
-      mostrar('El aforo máximo no puede ser superior a 30', 'error');
-      return;
-    }
-    if (form.hora_inicio >= form.hora_fin) {
-      mostrar('La hora de inicio debe ser anterior a la hora de fin', 'error');
-      return;
-    }
+    async function guardar() {
 
-    try {
-      const body = {
-        ...form,
-        aforo_maximo: parseInt(form.aforo_maximo),
-      };
-      const headers = { Authorization: `Bearer ${token}` };
+        if (!form.nombre || !form.sala || !form.hora_inicio || !form.hora_fin) {
+            mostrar('Rellena todos los campos obligatorios', 'error');
+            return;
+        }
 
-      if (editando) {
-        await axios.put(`${API_URL}/clases/${editando.id}`, body, { headers });
-      } else {
-        await axios.post(`${API_URL}/clases`, body, { headers });
-      }
+        if (parseInt(form.aforo_maximo) > 30) {
+            mostrar('El aforo máximo no puede ser superior a 30', 'error');
+            return;
+        }
 
-      setModal(false);
-      cargarClases();
-    } catch (e: any) {
-      mostrar(e.response?.data?.error || 'Error al guardar la clase', 'error');
+        const horaInicio = parseInt(form.hora_inicio.split(':')[0]);
+        const horaFin = parseInt(form.hora_fin.split(':')[0]);
+
+        if (horaInicio < 6 || horaInicio > 23 || horaFin < 6 || horaFin > 23) {
+            mostrar('Elige un horario entre las 6:00 y las 23:00', 'error');
+            return;
+        }
+
+        if (horaInicio >= horaFin) {
+            mostrar('La hora de inicio debe ser anterior a la hora de fin', 'error');
+            return;
+        }
+
+        try {
+            const body = {
+                ...form,
+                aforo_maximo: parseInt(form.aforo_maximo),
+            };
+            const headers = { Authorization: `Bearer ${token}` };
+
+            if (editando) {
+                await axios.put(`${API_URL}/clases/${editando.id}`, body, { headers });
+            } else {
+                await axios.post(`${API_URL}/clases`, body, { headers });
+            }
+
+            setModal(false);
+            cargarClases();
+        } catch (e: any) {
+            const mensaje = e.response?.data?.error || '';
+            if (mensaje.includes('invalid input syntax for type time')) {
+                mostrar('Introduce la hora en formato HH:MM', 'error');
+            } else {
+                mostrar(mensaje || 'Error al guardar la clase', 'error');
+            }
+        }
     }
-  }
 
     async function eliminar(id: number) {
         const confirmar = window.confirm('¿Eliminar esta clase?');
