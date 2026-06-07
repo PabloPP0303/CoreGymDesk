@@ -125,7 +125,7 @@ export default function AdminEjerciciosScreen() {
     const response = await fetch(uri);
     const blob = await response.blob();
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
         .from('ejercicios')
         .upload(fileName, blob, { contentType: 'image/jpeg' });
 

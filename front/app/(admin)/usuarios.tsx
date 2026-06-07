@@ -135,7 +135,7 @@ export default function AdminUsuariosScreen() {
         }, true);
     }
 
-    async function eliminarEjercicioDeRutina(id: number, rutina: any) {
+    async function eliminarEjercicioDeRutina(id: number) {
         try {
             await axios.delete(`${API_URL}/rutinas/ejercicio?id=${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -346,7 +346,7 @@ export default function AdminUsuariosScreen() {
                                                 <Text style={{ color: Colors.muted, fontSize: 12 }}>{re.dia} · {re.ejercicios?.nombre}</Text>
                                                 <View style={{ flexDirection: 'row', gap: 8 }}>
                                                     <Text style={{ color: Colors.accent, fontSize: 12 }}>{re.series}×{re.repeticiones}</Text>
-                                                    <TouchableOpacity onPress={() => eliminarEjercicioDeRutina(re.id, r)}>
+                                                    <TouchableOpacity onPress={() => eliminarEjercicioDeRutina(re.id)}>
                                                         <Text style={{ color: Colors.red, fontSize: 12 }}>✕</Text>
                                                     </TouchableOpacity>
                                                 </View>

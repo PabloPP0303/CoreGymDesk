@@ -72,6 +72,7 @@ export default function TiendaScreen() {
   }
 
   return (
+    <>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.titulo}>Tienda</Text>
@@ -171,6 +172,8 @@ export default function TiendaScreen() {
         </View>
       </Modal>
     </ScrollView>
+    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+    </>
   );
 }
 
