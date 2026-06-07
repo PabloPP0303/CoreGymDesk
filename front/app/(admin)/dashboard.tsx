@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -131,31 +131,9 @@ const styles = StyleSheet.create({
   claseNombre: { fontSize: 13, fontWeight: '600', color: Colors.text },
   claseMeta: { fontSize: 11, color: Colors.muted, marginTop: 2 },
   claseAforo: { fontSize: 13, color: Colors.muted },
-  headerSimple: {
-  flexDirection: 'row',
-  justifyContent: 'space-between', 
-  alignItems: 'center',            
-  paddingHorizontal: 16,
-  paddingVertical: 14,             
-  width: '100%',
-  backgroundColor: Colors.black,      
-},
-headerLeftSimple: {
-  flexDirection: 'column',
-},
-subtituloGimnasio: {
-  fontSize: 14,
-  color: Colors.red,                
-  marginTop: 2,
-},
-btnSalir: {
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-btnSalirText: {
-  color: Colors.muted,                
-  fontSize: 15,
-}
+  headerSimple: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center', paddingHorizontal: 16,paddingVertical: 14,width: '100%',backgroundColor: Colors.black},
+  headerLeftSimple: {flexDirection: 'column',},
+  subtituloGimnasio: {fontSize: 14,color: Colors.red,marginTop: 2},
+  btnSalir: {paddingHorizontal: 12,paddingVertical: 6,justifyContent: 'center',alignItems: 'center',},
+  btnSalirText: { color: Colors.muted,fontSize: 15,}
 });

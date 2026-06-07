@@ -13,7 +13,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [cargando, setCargando] = useState(false);
-  const { login, perfil } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
   const { toast, mostrar, ocultar } = useToast();
 

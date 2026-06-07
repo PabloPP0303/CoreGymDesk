@@ -31,7 +31,6 @@ export default function MisReservasScreen() {
   async function cargarReservas() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const hoy = new Date().toISOString().split('T')[0];
 
       const [resProximas, resHistorial] = await Promise.all([
         axios.get(`${API_URL}/reservas`, { headers }),

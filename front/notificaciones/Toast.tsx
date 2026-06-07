@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Text, View, StyleSheet } from 'react-native';
+import { Animated, Text, StyleSheet } from 'react-native';
 import { Colors } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 

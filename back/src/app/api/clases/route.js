@@ -9,15 +9,12 @@ export async function OPTIONS() {
 // GET - listar todas las clases activas
 export async function GET(req) {
   try {
-    const hoy = new Date().toISOString().split('T')[0];
-
     const { data, error } = await supabase
-      .from('clases')
-      .select('*, reservas(count)')
-      .eq('activa', true)
-      .eq('reservas.fecha', hoy)
-      .eq('reservas.estado', 'confirmada')
-      .order('hora_inicio', { ascending: true });
+  .from('clases')
+  .select('*, reservas(count)')
+  .eq('activa', true)
+  .eq('reservas.estado', 'confirmada')
+  .order('hora_inicio', { ascending: true })
  
     if (error) {
       return NextResponse.json(
