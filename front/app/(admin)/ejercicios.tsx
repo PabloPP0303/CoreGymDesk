@@ -9,6 +9,7 @@ import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { createClient } from '@supabase/supabase-js';
+import { Ionicons } from '@expo/vector-icons';
 
 
 const supabase = createClient(
@@ -34,6 +35,9 @@ export default function AdminEjerciciosScreen() {
   const [modal, setModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState(formVacio);
+  const [pagina, setPagina] = useState(1);
+  const ITEMS_POR_PAGINA = 10;
+  
 
   useFocusEffect(
     useCallback(() => {
@@ -141,79 +145,106 @@ export default function AdminEjerciciosScreen() {
     return coincideBusqueda && coincideGrupo;
   });
 
+    const ejerciciosPaginados = ejerciciosFiltrados.slice(
+        (pagina - 1) * ITEMS_POR_PAGINA,
+        pagina * ITEMS_POR_PAGINA
+    );
+    const totalPaginas = Math.ceil(ejerciciosFiltrados.length / ITEMS_POR_PAGINA);
+
   if (cargando) {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
   }
 
-  return (
-    <ScrollView style={styles.container}>
-          <View style={styles.header}>
-              <View style={styles.headerLeftSimple}>
-                  <Text style={styles.titulo}>Ejercicios</Text>
-                  <Text style={styles.subtitulo}>{ejercicios.length} ejercicios en el banco</Text>
-              </View>
-              <View style={styles.headerRightSimple}>
-                  <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
-                      <Text style={styles.btnPrimaryText}>+ Nuevo</Text>
-                  </TouchableOpacity>
-              </View>
-          </View>
-
-      <View style={styles.searchWrap}>
-        <TextInput
-          style={styles.searchInput}
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar ejercicio..."
-          placeholderTextColor={Colors.muted}
-        />
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
-        {grupos.map(g => (
-          <TouchableOpacity
-            key={g}
-            style={[styles.filtroBadge, filtroGrupo === g && styles.filtroBadgeActive]}
-            onPress={() => setFiltroGrupo(g)}
-          >
-            <Text style={[styles.filtroText, filtroGrupo === g && styles.filtroTextActive]}>{g}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <View style={styles.section}>
-        {ejerciciosFiltrados.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No se encontraron ejercicios</Text>
-          </View>
-        ) : (
-          ejerciciosFiltrados.map((e: any) => (
-            <View key={e.id} style={styles.ejercicioCard}>
-                {e.imagen_url ? (
-                    <Image 
-                    source={{ uri: e.imagen_url }} 
-                    style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10 }}
-                    resizeMode="cover"
-                    />
-                ) : null}
-              <View style={styles.ejercicioInfo}>
-                <Text style={styles.ejercicioNombre}>{e.nombre}</Text>
-                <View style={styles.grupoBadge}>
-                  <Text style={styles.grupoText}>{e.grupo_muscular}</Text>
+    return (
+        <ScrollView style={styles.container}>
+            <View style={styles.header}>
+                <View style={styles.headerLeftSimple}>
+                    <Text style={styles.titulo}>Ejercicios</Text>
+                    <Text style={styles.subtitulo}>{ejercicios.length} ejercicios en el banco</Text>
                 </View>
-                {e.descripcion ? <Text style={styles.ejercicioDesc}>{e.descripcion}</Text> : null}
-              </View>
-              <View style={styles.acciones}>
-                <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(e)}>
-                  <Text style={styles.btnEditarText}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(e.id, e.nombre)}>
-                  <Text style={styles.btnEliminarText}>Borrar</Text>
-                </TouchableOpacity>
-              </View>
+                <View style={styles.headerRightSimple}>
+                    <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
+                        <Text style={styles.btnPrimaryText}>+ Nuevo</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-          ))
-        )}
+
+            <View style={styles.searchWrap}>
+                <TextInput
+                    style={styles.searchInput}
+                    value={busqueda}
+                    onChangeText={v => {setBusqueda(v); setPagina(1)}}
+                    placeholder="Buscar ejercicio..."
+                    placeholderTextColor={Colors.muted}
+                />
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtrosRow}>
+                {grupos.map(g => (
+                    <TouchableOpacity
+                        key={g}
+                        style={[styles.filtroBadge, filtroGrupo === g && styles.filtroBadgeActive]}
+                        onPress={() => {setFiltroGrupo(g); setPagina(1)}}
+                    >
+                        <Text style={[styles.filtroText, filtroGrupo === g && styles.filtroTextActive]}>{g}</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+
+            <View style={styles.section}>
+                {ejerciciosFiltrados.length === 0 ? (
+                    <View style={styles.emptyCard}>
+                        <Text style={styles.emptyText}>No se encontraron ejercicios</Text>
+                    </View>
+                ) : (
+                    ejerciciosPaginados.map((e: any) => (
+                        <View key={e.id} style={styles.ejercicioCard}>
+                            {e.imagen_url ? (
+                                <Image
+                                    source={{ uri: e.imagen_url }}
+                                    style={{ width: 50, height: 50, borderRadius: 8, marginRight: 10 }}
+                                    resizeMode="cover"
+                                />
+                            ) : null}
+                            <View style={styles.ejercicioInfo}>
+                                <Text style={styles.ejercicioNombre}>{e.nombre}</Text>
+                                <View style={styles.grupoBadge}>
+                                    <Text style={styles.grupoText}>{e.grupo_muscular}</Text>
+                                </View>
+                                {e.descripcion ? <Text style={styles.ejercicioDesc}>{e.descripcion}</Text> : null}
+                            </View>
+                            <View style={styles.acciones}>
+                                <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(e)}>
+                                    <Text style={styles.btnEditarText}>Editar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(e.id, e.nombre)}>
+                                    <Text style={styles.btnEliminarText}>Borrar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    ))
+                )}
+                {totalPaginas > 1 && (
+                    <View style={styles.paginacionContainer}>
+                        <TouchableOpacity
+                            style={[styles.btnPaginacion, { opacity: pagina === 1 ? 0.4 : 1 }]}
+                            onPress={() => setPagina(p => p - 1)}
+                            disabled={pagina === 1}
+                        >
+                            <Text style={styles.btnGhostText}><Ionicons name="arrow-back" size={16} /> Anterior</Text>
+                        </TouchableOpacity>
+
+                        <Text style={styles.paginacionTexto}>{pagina} / {totalPaginas}</Text>
+
+                        <TouchableOpacity
+                            style={[styles.btnPaginacion, { opacity: pagina === totalPaginas ? 0.4 : 1 }]}
+                            onPress={() => setPagina(p => p + 1)}
+                            disabled={pagina === totalPaginas}
+                        >
+                            <Text style={styles.btnGhostText}>Siguiente <Ionicons name="arrow-forward" size={16} /></Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
       </View>
 
       <Modal visible={modal} transparent animationType="slide">
@@ -332,4 +363,7 @@ const styles = StyleSheet.create({
   btnPrimaryText: { color: Colors.black,fontWeight: 'bold'},
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnGhostText: { color: Colors.text, fontSize: 14 },
+  paginacionContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, width: '100%' },
+  btnPaginacion: { backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, marginHorizontal: 8, justifyContent: 'center', alignItems: 'center' },
+  paginacionTexto: { color: Colors.muted, fontSize: 14, fontWeight: '500', marginHorizontal: 12 },
 });
