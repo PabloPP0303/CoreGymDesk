@@ -8,6 +8,12 @@ import { useAuth } from '../../context/AuthContext';
 import { Colors } from '../../constants/theme';
 import { Toast } from '../../notificaciones/Toast';
 import { useToast } from '../../hooks/useToast';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.EXPO_PUBLIC_SUPABASE_URL!,
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -29,6 +35,21 @@ export default function LoginScreen() {
       mostrar(e.response?.data?.error || 'Credenciales incorrectas', 'error');
     } finally {
       setCargando(false);
+    }
+  }
+
+  async function olvidéContraseña() {
+    if (!email) {
+      mostrar('Introduce tu email primero', 'warning');
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://core-gym-desk-ddva.vercel.app',
+    });
+    if (error) {
+      mostrar('Error al enviar el email', 'error');
+    } else {
+      mostrar('Email enviado, revisa tu bandeja de entrada', 'success');
     }
   }
 
@@ -88,6 +109,11 @@ export default function LoginScreen() {
               ¿No tienes cuenta? <Text style={styles.linkAccent}>Regístrate</Text>
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={olvidéContraseña}>
+              <Text style={{ color: Colors.muted, fontSize: 13, textAlign: 'center', marginTop: 12 }}>
+                ¿Olvidaste tu contraseña?
+              </Text>
+            </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
