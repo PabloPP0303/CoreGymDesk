@@ -6,6 +6,10 @@ import {
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
+
+
 
 const DIAS_SEMANA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 const DIAS_LABEL = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -27,7 +31,7 @@ export default function AdminClasesScreen() {
   const [modal, setModal] = useState(false);
   const [editando, setEditando] = useState<any>(null);
   const [form, setForm] = useState(formVacio);
-
+  const { toast, mostrar, ocultar } = useToast();
   useEffect(() => {
     cargarClases();
   }, []);
@@ -73,16 +77,17 @@ export default function AdminClasesScreen() {
   }
 
   async function guardar() {
+    
     if (!form.nombre || !form.sala || !form.hora_inicio || !form.hora_fin) {
-      Alert.alert('Error', 'Rellena todos los campos obligatorios');
+      mostrar('Rellena todos los campos obligatorios', 'error');
       return;
     }
     if (parseInt(form.aforo_maximo) > 30) {
-      Alert.alert('Error', 'El aforo máximo es 30');
+      mostrar('El aforo máximo no puede ser superior a 30', 'error');
       return;
     }
     if (form.hora_inicio >= form.hora_fin) {
-      Alert.alert('Error', 'La hora de inicio debe ser anterior a la hora de fin');
+      mostrar('La hora de inicio debe ser anterior a la hora de fin', 'error');
       return;
     }
 
@@ -102,7 +107,7 @@ export default function AdminClasesScreen() {
       setModal(false);
       cargarClases();
     } catch (e: any) {
-      Alert.alert('Error', e.response?.data?.error || 'Error al guardar la clase');
+      mostrar(e.response?.data?.error || 'Error al guardar la clase', 'error');
     }
   }
 
@@ -116,7 +121,7 @@ export default function AdminClasesScreen() {
             });
             cargarClases();
         } catch (e: any) {
-            window.alert(e.response?.data?.error || 'Error al eliminar');
+            mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
         }
     }
 
@@ -124,117 +129,118 @@ export default function AdminClasesScreen() {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
   }
 
-  return (
-    <ScrollView style={styles.container}>
-          <View style={styles.headerSimple}>
-              <View style={styles.headerLeftSimple}>
-                  <Text style={styles.titulo}>Clases</Text>
-                  <Text style={styles.subtitulo}>{clases.length} clases activas</Text>
-              </View>
-              <View style={styles.headerRightSimple}>
-                  <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
-                      <Text style={styles.btnPrimaryText}>+ Nueva</Text>
-                  </TouchableOpacity>
-              </View>
-          </View>
+    return (
+            <ScrollView style={styles.container}>
+                <View style={styles.headerSimple}>
+                    <View style={styles.headerLeftSimple}>
+                        <Text style={styles.titulo}>Clases</Text>
+                        <Text style={styles.subtitulo}>{clases.length} clases activas</Text>
+                    </View>
+                    <View style={styles.headerRightSimple}>
+                        <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
+                            <Text style={styles.btnPrimaryText}>+ Nueva</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
 
-      <View style={styles.section}>
-        {clases.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No hay clases creadas</Text>
-          </View>
-        ) : (
-          clases.map((clase: any) => (
-            <View key={clase.id} style={styles.claseCard}>
-              <View style={styles.claseInfo}>
-                <Text style={styles.claseNombre}>{clase.nombre}</Text>
-                <Text style={styles.claseMeta}>{clase.sala} · {clase.hora_inicio} – {clase.hora_fin}</Text>
-                <Text style={styles.claseMeta}>Aforo: {clase.aforo_maximo} plazas</Text>
-                {clase.dias && clase.dias.length > 0 && (
-                  <Text style={styles.claseDias}>{clase.dias.join(', ')}</Text>
-                )}
-              </View>
-              <View style={styles.claseAcciones}>
-                <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(clase)}>
-                  <Text style={styles.btnEditarText}>Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(clase.id)}>
-                  <Text style={styles.btnEliminarText}>Borrar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))
-        )}
-      </View>
+                <View style={styles.section}>
+                    {clases.length === 0 ? (
+                        <View style={styles.emptyCard}>
+                            <Text style={styles.emptyText}>No hay clases creadas</Text>
+                        </View>
+                    ) : (
+                        clases.map((clase: any) => (
+                            <View key={clase.id} style={styles.claseCard}>
+                                <View style={styles.claseInfo}>
+                                    <Text style={styles.claseNombre}>{clase.nombre}</Text>
+                                    <Text style={styles.claseMeta}>{clase.sala} · {clase.hora_inicio} – {clase.hora_fin}</Text>
+                                    <Text style={styles.claseMeta}>Aforo: {clase.aforo_maximo} plazas</Text>
+                                    {clase.dias && clase.dias.length > 0 && (
+                                        <Text style={styles.claseDias}>{clase.dias.join(', ')}</Text>
+                                    )}
+                                </View>
+                                <View style={styles.claseAcciones}>
+                                    <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(clase)}>
+                                        <Text style={styles.btnEditarText}>Editar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(clase.id)}>
+                                        <Text style={styles.btnEliminarText}>Borrar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ))
+                    )}
+                </View>
 
-      <Modal visible={modal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.modalTitulo}>
-              {editando ? 'Editar clase' : 'Nueva clase'}
-            </Text>
+                <Modal visible={modal} transparent animationType="slide">
+                    <View style={styles.modalOverlay}>
+                        <ScrollView style={styles.modalContent}>
+                            <Text style={styles.modalTitulo}>
+                                {editando ? 'Editar clase' : 'Nueva clase'}
+                            </Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nombre *</Text>
-              <TextInput style={styles.input} value={form.nombre} onChangeText={v => setForm(p => ({ ...p, nombre: v }))} placeholder="CrossFit Matutino" placeholderTextColor={Colors.muted} />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Nombre *</Text>
+                                <TextInput style={styles.input} value={form.nombre} onChangeText={v => setForm(p => ({ ...p, nombre: v }))} placeholder="CrossFit Matutino" placeholderTextColor={Colors.muted} />
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Sala *</Text>
-              <TextInput style={styles.input} value={form.sala} onChangeText={v => setForm(p => ({ ...p, sala: v }))} placeholder="Sala A" placeholderTextColor={Colors.muted} />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Sala *</Text>
+                                <TextInput style={styles.input} value={form.sala} onChangeText={v => setForm(p => ({ ...p, sala: v }))} placeholder="Sala A" placeholderTextColor={Colors.muted} />
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Descripción</Text>
-              <TextInput style={[styles.input, { height: 70 }]} value={form.descripcion} onChangeText={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Descripción de la clase..." placeholderTextColor={Colors.muted} multiline />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Descripción</Text>
+                                <TextInput style={[styles.input, { height: 70 }]} value={form.descripcion} onChangeText={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Descripción de la clase..." placeholderTextColor={Colors.muted} multiline />
+                            </View>
 
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Hora inicio *</Text>
-                <TextInput style={styles.input} value={form.hora_inicio} onChangeText={v => setForm(p => ({ ...p, hora_inicio: v }))} placeholder="18:00" placeholderTextColor={Colors.muted} />
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Hora fin *</Text>
-                <TextInput style={styles.input} value={form.hora_fin} onChangeText={v => setForm(p => ({ ...p, hora_fin: v }))} placeholder="19:00" placeholderTextColor={Colors.muted} />
-              </View>
-            </View>
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Text style={styles.label}>Hora inicio *</Text>
+                                    <TextInput style={styles.input} value={form.hora_inicio} onChangeText={v => setForm(p => ({ ...p, hora_inicio: v }))} placeholder="18:00" placeholderTextColor={Colors.muted} />
+                                </View>
+                                <View style={{ width: 12 }} />
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Text style={styles.label}>Hora fin *</Text>
+                                    <TextInput style={styles.input} value={form.hora_fin} onChangeText={v => setForm(p => ({ ...p, hora_fin: v }))} placeholder="19:00" placeholderTextColor={Colors.muted} />
+                                </View>
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Aforo máximo (máx. 30)</Text>
-              <TextInput style={styles.input} value={form.aforo_maximo} onChangeText={v => setForm(p => ({ ...p, aforo_maximo: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Aforo máximo (máx. 30)</Text>
+                                <TextInput style={styles.input} value={form.aforo_maximo} onChangeText={v => setForm(p => ({ ...p, aforo_maximo: v }))} keyboardType="numeric" placeholderTextColor={Colors.muted} />
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Días</Text>
-              <View style={styles.diasRow}>
-                {DIAS_SEMANA.map((dia, i) => (
-                  <TouchableOpacity
-                    key={dia}
-                    style={[styles.diaBadge, form.dias.includes(dia) && styles.diaBadgeActive]}
-                    onPress={() => toggleDia(dia)}
-                  >
-                    <Text style={[styles.diaText, form.dias.includes(dia) && styles.diaTextActive]}>
-                      {DIAS_LABEL[i]}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Días</Text>
+                                <View style={styles.diasRow}>
+                                    {DIAS_SEMANA.map((dia, i) => (
+                                        <TouchableOpacity
+                                            key={dia}
+                                            style={[styles.diaBadge, form.dias.includes(dia) && styles.diaBadgeActive]}
+                                            onPress={() => toggleDia(dia)}
+                                        >
+                                            <Text style={[styles.diaText, form.dias.includes(dia) && styles.diaTextActive]}>
+                                                {DIAS_LABEL[i]}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
 
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
-                <Text style={styles.btnGhostText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
-                <Text style={styles.btnPrimaryText}>{editando ? 'Guardar cambios' : 'Crear clase'}</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
-    </ScrollView>
+                            <View style={styles.modalBtns}>
+                                <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
+                                    <Text style={styles.btnGhostText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
+                                    <Text style={styles.btnPrimaryText}>{editando ? 'Guardar cambios' : 'Crear clase'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </View>
+                    <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+                </Modal>
+            </ScrollView>
   );
 }
 
@@ -272,8 +278,8 @@ const styles = StyleSheet.create({
   diaText: { fontSize: 12, color: Colors.muted },
   diaTextActive: { color: Colors.black, fontWeight: '700' },
   modalBtns: { flexDirection: 'row', gap: 10, marginTop: 8, marginBottom: 24 },
-  btnPrimary: {backgroundColor: Colors.accent,paddingHorizontal: 16,paddingVertical: 10,borderRadius: 8},
-  btnPrimaryText: {color: Colors.black,fontWeight: 'bold'},
+  btnPrimary: {backgroundColor: Colors.accent,paddingHorizontal: 16,paddingVertical: 10,borderRadius: 8, flex: 1},
+  btnPrimaryText: {color: Colors.black,fontWeight: 'bold', textAlign: 'center'},
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnGhostText: { color: Colors.text, fontSize: 14 }
 });
