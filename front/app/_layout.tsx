@@ -4,6 +4,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
 import { Colors } from '../constants/theme';
+import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 
 function RutasProtegidas() {
   const { usuario, perfil, loading } = useAuth();
@@ -44,6 +45,14 @@ function RutasProtegidas() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold
+  });
+
+  if (!fontsLoaded) return null;
+
   return (
     <AuthProvider>
       <RutasProtegidas />

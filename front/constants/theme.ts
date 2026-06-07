@@ -13,5 +13,10 @@ export const Colors = {
   orange: '#f97316',
   white: '#ffffff',
 };
+export const Fonts = {
+  regular: 'Inter_400Regular',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+};
  
 export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://core-gym-desk.vercel.app/api';
