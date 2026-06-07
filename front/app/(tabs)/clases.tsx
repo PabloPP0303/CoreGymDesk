@@ -16,6 +16,7 @@ export default function ClasesScreen() {
     dia.setDate(hoy.getDate() + i);
     return dia;
   });
+  const mesActual = hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
 
   useFocusEffect(
     useCallback(() => {
@@ -61,13 +62,18 @@ export default function ClasesScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.titulo}>Clases</Text>
-        <Text style={styles.subtitulo}>Calendario semanal</Text>
+        <Text style={styles.subtitulo}>Reserva tu plaza</Text>
       </View>
       <View style={styles.divisor} />
+      <View style={{ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: Colors.black }}>
+        <Text style={{ fontSize: 12, color: Colors.muted, textTransform: 'uppercase', letterSpacing: 1, fontWeight: '600' }}>
+          {mesActual.charAt(0).toUpperCase() + mesActual.slice(1)}
+        </Text>
+      </View>
 
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calendarRow}>
       {diasSemana.map((dia, i) => {
-        const nombreDia = dia.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
+        const nombreDia = dia.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');;
         return (
           <View key={i} style={[styles.diaCol, i === 0 && styles.diaColHoy]}>
             <Text style={[styles.diaNombre, i === 0 && styles.diaHoyText]}>
