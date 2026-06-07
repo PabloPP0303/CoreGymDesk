@@ -44,13 +44,13 @@ export default function AdminDashboard() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
+      <View style={styles.headerSimple}>
+        <View style={styles.headerLeftSimple}>
           <Text style={styles.titulo}>Panel Admin</Text>
-          <Text style={styles.subtitulo}>Gimnasio Combo</Text>
+          <Text style={styles.subtituloGimnasio}>Gimnasio Combo</Text>
         </View>
-        <TouchableOpacity onPress={logout}>
-          <Text style={styles.logout}>Salir</Text>
+        <TouchableOpacity style={styles.btnSalir} onPress={logout}>
+          <Text style={styles.btnSalirText}>Salir</Text>
         </TouchableOpacity>
       </View>
 
@@ -131,4 +131,31 @@ const styles = StyleSheet.create({
   claseNombre: { fontSize: 13, fontWeight: '600', color: Colors.text },
   claseMeta: { fontSize: 11, color: Colors.muted, marginTop: 2 },
   claseAforo: { fontSize: 13, color: Colors.muted },
+  headerSimple: {
+  flexDirection: 'row',
+  justifyContent: 'space-between', 
+  alignItems: 'center',            
+  paddingHorizontal: 16,
+  paddingVertical: 14,             
+  width: '100%',
+  backgroundColor: Colors.black,      
+},
+headerLeftSimple: {
+  flexDirection: 'column',
+},
+subtituloGimnasio: {
+  fontSize: 14,
+  color: Colors.red,                
+  marginTop: 2,
+},
+btnSalir: {
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+btnSalirText: {
+  color: Colors.muted,                
+  fontSize: 15,
+}
 });

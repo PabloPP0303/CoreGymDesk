@@ -147,13 +147,15 @@ export default function RutinasScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerLeftSimple}>
           <Text style={styles.titulo}>Mis rutinas</Text>
           <Text style={styles.subtitulo}>{rutinas.length} rutinas activas</Text>
         </View>
-        <TouchableOpacity style={styles.btnPrimary} onPress={() => setModalRutina(true)}>
-          <Text style={styles.btnPrimaryText}>+ Nueva</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRightSimple}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => setModalRutina(true)}>
+            <Text style={styles.btnPrimaryText}>+ Nueva</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -375,10 +377,10 @@ export default function RutinasScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  titulo: { fontSize: 26, fontWeight: '700', color: Colors.text },
-  subtitulo: { fontSize: 13, color: Colors.muted, marginTop: 2 },
-  section: { padding: 16 },
+  header: {flexDirection: 'row',justifyContent: 'space-between', alignItems: 'center',paddingHorizontal: 16,paddingVertical: 14,width: '100%',backgroundColor: Colors.black},
+  headerLeftSimple: {flexDirection: 'column'},
+  headerRightSimple: {justifyContent: 'center',alignItems: 'flex-end'},  titulo: {fontSize: 24,fontWeight: 'bold',color: Colors.text},
+  subtitulo: {fontSize: 14,color: Colors.muted,marginTop: 2},  section: { padding: 16 },
   emptyCard: { backgroundColor: Colors.card, borderRadius: 12, padding: 20, alignItems: 'center', borderWidth: 1, borderColor: Colors.border },
   emptyText: { color: Colors.muted, fontSize: 13 },
   rutinaCard: { backgroundColor: Colors.card, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
@@ -416,8 +418,7 @@ const styles = StyleSheet.create({
   diaTextActive: { color: Colors.black, fontWeight: '700' },
   row: { flexDirection: 'row' },
   modalBtns: { flexDirection: 'row', gap: 10, marginTop: 8, marginBottom: 24 },
-  btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
-  btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
-  btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
+  btnPrimary: {backgroundColor: Colors.accent, paddingHorizontal: 16,paddingVertical: 10,borderRadius: 8},
+  btnPrimaryText: {color: Colors.black,fontWeight: 'bold'},  btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnGhostText: { color: Colors.text, fontSize: 14 },
 });

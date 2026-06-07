@@ -126,15 +126,17 @@ export default function AdminClasesScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.titulo}>Clases</Text>
-          <Text style={styles.subtitulo}>{clases.length} clases activas</Text>
-        </View>
-        <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
-          <Text style={styles.btnPrimaryText}>+ Nueva</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.headerSimple}>
+              <View style={styles.headerLeftSimple}>
+                  <Text style={styles.titulo}>Clases</Text>
+                  <Text style={styles.subtitulo}>{clases.length} clases activas</Text>
+              </View>
+              <View style={styles.headerRightSimple}>
+                  <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
+                      <Text style={styles.btnPrimaryText}>+ Nueva</Text>
+                  </TouchableOpacity>
+              </View>
+          </View>
 
       <View style={styles.section}>
         {clases.length === 0 ? (
@@ -239,7 +241,9 @@ export default function AdminClasesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  headerSimple: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center', paddingHorizontal: 16,paddingVertical: 14,width: '100%', backgroundColor: Colors.black},
+  headerLeftSimple: {flexDirection: 'column'},
+  headerRightSimple: {justifyContent: 'center',alignItems: 'flex-end'},
   titulo: { fontSize: 24, fontWeight: '700', color: Colors.text },
   subtitulo: { fontSize: 12, color: Colors.muted, marginTop: 2 },
   section: { padding: 16 },
@@ -268,8 +272,8 @@ const styles = StyleSheet.create({
   diaText: { fontSize: 12, color: Colors.muted },
   diaTextActive: { color: Colors.black, fontWeight: '700' },
   modalBtns: { flexDirection: 'row', gap: 10, marginTop: 8, marginBottom: 24 },
-  btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
-  btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
+  btnPrimary: {backgroundColor: Colors.accent,paddingHorizontal: 16,paddingVertical: 10,borderRadius: 8},
+  btnPrimaryText: {color: Colors.black,fontWeight: 'bold'},
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
-  btnGhostText: { color: Colors.text, fontSize: 14 },
+  btnGhostText: { color: Colors.text, fontSize: 14 }
 });

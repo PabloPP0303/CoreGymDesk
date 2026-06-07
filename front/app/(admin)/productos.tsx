@@ -343,8 +343,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark},
   header: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center',paddingHorizontal: 16,paddingTop: Platform.OS === 'web' ? 16 : 56,paddingBottom: 16,backgroundColor: Colors.black,borderBottomWidth: 1, 
-  borderBottomColor: Colors.border 
-  },
+  borderBottomColor: Colors.border },
   headerLeft: {justifyContent: 'center'},
   headerCenter: {position: 'absolute',left: 0,right: 0,alignItems: 'center',justifyContent: 'center',zIndex: -1},
   headerRight: {justifyContent: 'center',alignItems: 'flex-end'},

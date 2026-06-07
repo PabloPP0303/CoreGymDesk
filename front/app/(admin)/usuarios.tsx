@@ -137,12 +137,10 @@ export default function AdminUsuariosScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.titulo}>Usuarios</Text>
-          <Text style={styles.subtitulo}>{usuarios.length} socios registrados</Text>
-        </View>
-      </View>
+          <View style={styles.header}>
+              <Text style={styles.titulo}>Usuarios</Text>
+              <Text style={styles.subtitulo}>3 socios registrados</Text>
+          </View>
 
       <View style={styles.searchWrap}>
         <TextInput
@@ -314,7 +312,7 @@ export default function AdminUsuariosScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
-  header: { padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  header: {flexDirection: 'column',justifyContent: 'center',paddingHorizontal: 16,paddingTop: 20,paddingBottom: 16,width: '100%',backgroundColor: Colors.black},
   titulo: { fontSize: 24, fontWeight: '700', color: Colors.text },
   subtitulo: { fontSize: 12, color: Colors.muted, marginTop: 2 },
   searchWrap: { padding: 16, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },

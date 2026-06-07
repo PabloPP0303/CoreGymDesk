@@ -147,15 +147,17 @@ export default function AdminEjerciciosScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.titulo}>Ejercicios</Text>
-          <Text style={styles.subtitulo}>{ejercicios.length} ejercicios en el banco</Text>
-        </View>
-        <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
-          <Text style={styles.btnPrimaryText}>+ Nuevo</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.header}>
+              <View style={styles.headerLeftSimple}>
+                  <Text style={styles.titulo}>Ejercicios</Text>
+                  <Text style={styles.subtitulo}>{ejercicios.length} ejercicios en el banco</Text>
+              </View>
+              <View style={styles.headerRightSimple}>
+                  <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
+                      <Text style={styles.btnPrimaryText}>+ Nuevo</Text>
+                  </TouchableOpacity>
+              </View>
+          </View>
 
       <View style={styles.searchWrap}>
         <TextInput
@@ -294,9 +296,10 @@ export default function AdminEjerciciosScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.dark },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  titulo: { fontSize: 24, fontWeight: '700', color: Colors.text },
-  subtitulo: { fontSize: 12, color: Colors.muted, marginTop: 2 },
+  header: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center',paddingHorizontal: 16,paddingVertical: 14,width: '100%',backgroundColor: Colors.black},
+  headerLeftSimple: {flexDirection: 'column'},
+  headerRightSimple: {justifyContent: 'center',alignItems: 'flex-end'},  titulo: {fontSize: 24,fontWeight: 'bold',color: Colors.text},
+  subtitulo: {fontSize: 14,color: Colors.muted},
   searchWrap: { padding: 16, paddingBottom: 8, backgroundColor: Colors.black },
   searchInput: { backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 10, color: Colors.text, fontSize: 14 },
   filtrosRow: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
@@ -325,8 +328,8 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, color: Colors.muted, marginBottom: 5, fontWeight: '500' },
   input: { backgroundColor: Colors.dark, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, color: Colors.text, fontSize: 14 },
   modalBtns: { flexDirection: 'row', gap: 10, marginTop: 8, marginBottom: 24 },
-  btnPrimary: { backgroundColor: Colors.accent, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
-  btnPrimaryText: { color: Colors.black, fontWeight: '700', fontSize: 14 },
+  btnPrimary: {backgroundColor: Colors.accent,paddingHorizontal: 16,paddingVertical: 10,borderRadius: 8},
+  btnPrimaryText: { color: Colors.black,fontWeight: 'bold'},
   btnGhost: { borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 12, alignItems: 'center', flex: 1 },
   btnGhostText: { color: Colors.text, fontSize: 14 },
 });

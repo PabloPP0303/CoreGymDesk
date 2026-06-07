@@ -114,8 +114,8 @@ export default function PerfilScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark },
   header: { alignItems: 'center', padding: 24, paddingTop: 56, backgroundColor: Colors.black, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  avatarWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.accent2, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: Colors.accent, marginBottom: 12 },
-  avatarText: { fontSize: 26, fontWeight: '700', color: Colors.white },
+  avatarWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.accent, justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: Colors.black, marginBottom: 12 },
+  avatarText: { fontSize: 26, fontWeight: '700', color: Colors.black },
   nombre: { fontSize: 22, fontWeight: '700', color: Colors.text },
   rol: { fontSize: 13, color: Colors.muted, marginTop: 2, marginBottom: 10 },
   badgeGreen: { backgroundColor: 'rgba(34,197,94,0.1)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)' },
