@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert, TextInput, Modal
+  ActivityIndicator, TextInput, Modal
 } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';

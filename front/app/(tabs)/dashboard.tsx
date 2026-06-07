@@ -10,6 +10,10 @@ export default function DashboardScreen() {
   const [reservas, setReservas] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
   const router = useRouter();
+  const [cuota, setCuota] = useState<any>(null);
+  const diasRestantes = cuota?.fecha_vencimiento
+    ? Math.max(0, Math.ceil((new Date(cuota.fecha_vencimiento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : null;
 
   const hoy = new Date();
   const fecha = hoy.toLocaleDateString('es-ES', { 
@@ -21,6 +25,7 @@ export default function DashboardScreen() {
   useFocusEffect(
     useCallback(() => {
       cargarReservas();
+      cargarCuota();
     }, [])
   );
 
@@ -34,6 +39,17 @@ export default function DashboardScreen() {
       console.error(e);
     } finally {
       setCargando(false);
+    }
+  }
+
+  async function cargarCuota() {
+    try {
+      const res = await axios.get(`${API_URL}/cuotas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCuota(res.data);
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -57,7 +73,7 @@ export default function DashboardScreen() {
           <Text style={styles.statLabel}>Reservas</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNum, { color: Colors.green }]}>28</Text>
+          <Text style={[styles.statNum, { color: diasRestantes !== null && diasRestantes <= 5 ? Colors.red : Colors.green }]}>{diasRestantes ?? '—'}</Text>
           <Text style={styles.statLabel}>Días cuota</Text>
         </View>
         <View style={styles.statCard}>

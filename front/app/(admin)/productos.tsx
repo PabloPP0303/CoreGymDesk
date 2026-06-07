@@ -11,6 +11,8 @@ import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 const supabase = createClient(
   process.env.EXPO_PUBLIC_SUPABASE_URL!,
@@ -39,6 +41,7 @@ export default function AdminProductosScreen() {
   const [form, setForm] = useState(formVacio);
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [verPedidos, setVerPedidos] = useState(false);
+  const { toast, mostrar, ocultar } = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -71,7 +74,7 @@ export default function AdminProductosScreen() {
             );
             cargarProductos();
         } catch (e: any) {
-            window.alert(e.response?.data?.error || 'Error al actualizar pedido');
+            mostrar(e.response?.data?.error || 'Error al actualizar pedido', 'error');
         }
     }
 
@@ -114,18 +117,18 @@ export default function AdminProductosScreen() {
       .upload(fileName, blob, { contentType: 'image/jpeg' });
 
     if (error) {
-      window.alert('Error al subir imagen');
+      mostrar('Error al subir imagen', 'error');
       return;
     }
 
     const { data: urlData } = supabase.storage.from('productos').getPublicUrl(fileName);
     setForm(p => ({ ...p, imagen_url: urlData.publicUrl }));
-    window.alert('Imagen subida correctamente');
+    mostrar('Imagen subida correctamente', 'success');
   }
 
   async function guardar() {
     if (!form.nombre.trim() || !form.precio || !form.stock) {
-      window.alert('Nombre, precio y stock son obligatorios');
+      mostrar('Nombre, precio y stock son obligatorios', 'error');
       return;
     }
     try {
@@ -145,7 +148,7 @@ export default function AdminProductosScreen() {
       setModal(false);
       cargarProductos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al guardar producto');
+      mostrar(e.response?.data?.error || 'Error al guardar producto', 'error');
     }
   }
 
@@ -158,7 +161,7 @@ export default function AdminProductosScreen() {
       });
       cargarProductos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al eliminar');
+      mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
     }
   }
 
@@ -166,177 +169,180 @@ export default function AdminProductosScreen() {
     return <View style={styles.centered}><ActivityIndicator color={Colors.accent} size="large" /></View>;
   }
 
-  return (
-      <ScrollView style={styles.container}>
-          <View style={styles.header}>
-              <View style={styles.headerLeft}>
-                  <Text style={styles.titulo}>{verPedidos ? 'Pedidos' : 'Productos'}</Text>
-                  <Text style={styles.subtitulo}>
-                      {verPedidos
-                          ? `${pedidos.filter(p => p.estado === 'pendiente').length} pedidos pendientes`
-                          : `${productos.length} productos en catálogo`}
-                  </Text>
-              </View>
+    return (
+        <>
+            <ScrollView style={styles.container}>
+                <View style={styles.header}>
+                    <View style={styles.headerLeft}>
+                        <Text style={styles.titulo}>{verPedidos ? 'Pedidos' : 'Productos'}</Text>
+                        <Text style={styles.subtitulo}>
+                            {verPedidos
+                                ? `${pedidos.filter(p => p.estado === 'pendiente').length} pedidos pendientes`
+                                : `${productos.length} productos en catálogo`}
+                        </Text>
+                    </View>
 
-              <View style={styles.headerCenter}>
-                  {!verPedidos && (
-                      <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
-                          <Text style={styles.btnPrimaryText}>+ Nuevo Producto</Text>
-                      </TouchableOpacity>
-                  )}
-              </View>
-              <View style={styles.headerRight}>
-                  <TouchableOpacity
-                      style={styles.btnGhost}
-                      onPress={() => setVerPedidos(!verPedidos)}
-                  >
-                      <Text style={styles.btnGhostText}>
-                          {verPedidos ? 'Ver productos' : `Pedidos (${pedidos.filter(p => p.estado === 'pendiente').length})`}
-                      </Text>
-                  </TouchableOpacity>
-              </View>
-          </View>
+                    <View style={styles.headerCenter}>
+                        {!verPedidos && (
+                            <TouchableOpacity style={styles.btnPrimary} onPress={abrirCrear}>
+                                <Text style={styles.btnPrimaryText}>+ Nuevo Producto</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                    <View style={styles.headerRight}>
+                        <TouchableOpacity
+                            style={styles.btnGhost}
+                            onPress={() => setVerPedidos(!verPedidos)}
+                        >
+                            <Text style={styles.btnGhostText}>
+                                {verPedidos ? 'Ver productos' : `Pedidos (${pedidos.filter(p => p.estado === 'pendiente').length})`}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
 
-      {verPedidos ? (
-        <View style={styles.section}>
-          {pedidos.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>No hay pedidos</Text>
-            </View>
-          ) : (
-            pedidos.map((p: any) => (
-              <View key={p.id} style={styles.pedidoCard}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productoNombre}>{p.productos?.nombre}</Text>
-                  <Text style={styles.productoMeta}>
-                    {p.perfiles?.nombre} {p.perfiles?.apellidos} · {p.cantidad} ud · {p.productos?.precio}€
-                  </Text>
-                  <Text style={styles.productoMeta}>
-                    {new Date(p.created_at).toLocaleDateString('es-ES')}
-                  </Text>
-                </View>
-                <View style={{ gap: 6, alignItems: 'flex-end' }}>
-                  <View style={[styles.stockBadge, p.estado === 'pendiente' && styles.stockBadgeRed]}>
-                    <Text style={[styles.stockText, p.estado === 'pendiente' && styles.stockTextRed]}>
-                      {p.estado}
-                    </Text>
-                  </View>
-                  {p.estado === 'pendiente' && (
-                    <TouchableOpacity style={styles.btnEditar} onPress={() => marcarPagado(p.id)}>
-                      <Text style={styles.btnEditarText}>Marcar pagado</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            ))
-          )}
-        </View>
-      ) : (
-        <View style={styles.section}>
-          {productos.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>No hay productos creados</Text>
-            </View>
-          ) : (
-            productos.map((p: any) => (
-              <View key={p.id} style={styles.productoCard}>
-                {p.imagen_url ? (
-                  <Image source={{ uri: p.imagen_url }} style={styles.productoImg} resizeMode="cover" />
+                {verPedidos ? (
+                    <View style={styles.section}>
+                        {pedidos.length === 0 ? (
+                            <View style={styles.emptyCard}>
+                                <Text style={styles.emptyText}>No hay pedidos</Text>
+                            </View>
+                        ) : (
+                            pedidos.map((p: any) => (
+                                <View key={p.id} style={styles.pedidoCard}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.productoNombre}>{p.productos?.nombre}</Text>
+                                        <Text style={styles.productoMeta}>
+                                            {p.perfiles?.nombre} {p.perfiles?.apellidos} · {p.cantidad} ud · {p.productos?.precio}€
+                                        </Text>
+                                        <Text style={styles.productoMeta}>
+                                            {new Date(p.created_at).toLocaleDateString('es-ES')}
+                                        </Text>
+                                    </View>
+                                    <View style={{ gap: 6, alignItems: 'flex-end' }}>
+                                        <View style={[styles.stockBadge, p.estado === 'pendiente' && styles.stockBadgeRed]}>
+                                            <Text style={[styles.stockText, p.estado === 'pendiente' && styles.stockTextRed]}>
+                                                {p.estado}
+                                            </Text>
+                                        </View>
+                                        {p.estado === 'pendiente' && (
+                                            <TouchableOpacity style={styles.btnEditar} onPress={() => marcarPagado(p.id)}>
+                                                <Text style={styles.btnEditarText}>Marcar pagado</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                </View>
+                            ))
+                        )}
+                    </View>
                 ) : (
-                  <View style={[styles.productoImg, styles.productoImgPlaceholder]}>
-                    <Ionicons name="shirt-outline" size={24} color={Colors.accent} />
-                  </View>
+                    <View style={styles.section}>
+                        {productos.length === 0 ? (
+                            <View style={styles.emptyCard}>
+                                <Text style={styles.emptyText}>No hay productos creados</Text>
+                            </View>
+                        ) : (
+                            productos.map((p: any) => (
+                                <View key={p.id} style={styles.productoCard}>
+                                    {p.imagen_url ? (
+                                        <Image source={{ uri: p.imagen_url }} style={styles.productoImg} resizeMode="cover" />
+                                    ) : (
+                                        <View style={[styles.productoImg, styles.productoImgPlaceholder]}>
+                                            <Ionicons name="shirt-outline" size={24} color={Colors.accent} />
+                                        </View>
+                                    )}
+                                    <View style={styles.productoInfo}>
+                                        <Text style={styles.productoNombre}>{p.nombre}</Text>
+                                        <Text style={styles.productoMeta}>{p.categoria} · {p.precio}€</Text>
+                                        <View style={[styles.stockBadge, p.stock <= 0 && styles.stockBadgeRed]}>
+                                            <Text style={[styles.stockText, p.stock <= 0 && styles.stockTextRed]}>
+                                                Stock: {p.stock}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.acciones}>
+                                        <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(p)}>
+                                            <Text style={styles.btnEditarText}>Editar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(p.id, p.nombre)}>
+                                            <Text style={styles.btnEliminarText}>Borrar</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))
+                        )}
+                    </View>
                 )}
-                <View style={styles.productoInfo}>
-                  <Text style={styles.productoNombre}>{p.nombre}</Text>
-                  <Text style={styles.productoMeta}>{p.categoria} · {p.precio}€</Text>
-                  <View style={[styles.stockBadge, p.stock <= 0 && styles.stockBadgeRed]}>
-                    <Text style={[styles.stockText, p.stock <= 0 && styles.stockTextRed]}>
-                      Stock: {p.stock}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.acciones}>
-                  <TouchableOpacity style={styles.btnEditar} onPress={() => abrirEditar(p)}>
-                    <Text style={styles.btnEditarText}>Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.btnEliminar} onPress={() => eliminar(p.id, p.nombre)}>
-                    <Text style={styles.btnEliminarText}>Borrar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))
-          )}
-        </View>
-      )}
 
-      <Modal visible={modal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.modalTitulo}>
-              {editando ? 'Editar producto' : 'Nuevo producto'}
-            </Text>
+                <Modal visible={modal} transparent animationType="slide">
+                    <View style={styles.modalOverlay}>
+                        <ScrollView style={styles.modalContent}>
+                            <Text style={styles.modalTitulo}>
+                                {editando ? 'Editar producto' : 'Nuevo producto'}
+                            </Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nombre *</Text>
-              <TextInput style={styles.input} value={form.nombre} onChangeText={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Camiseta Combo..." placeholderTextColor={Colors.muted} />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Nombre *</Text>
+                                <TextInput style={styles.input} value={form.nombre} onChangeText={v => setForm(p => ({ ...p, nombre: v }))} placeholder="Camiseta Combo..." placeholderTextColor={Colors.muted} />
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Categoría</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {CATEGORIAS.map(cat => (
-                  <TouchableOpacity
-                    key={cat}
-                    style={[styles.catBadge, form.categoria === cat && styles.catBadgeActive]}
-                    onPress={() => setForm(p => ({ ...p, categoria: cat }))}
-                  >
-                    <Text style={[styles.catText, form.categoria === cat && styles.catTextActive]}>{cat}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Categoría</Text>
+                                <View style={{ flexDirection: 'row', gap: 8 }}>
+                                    {CATEGORIAS.map(cat => (
+                                        <TouchableOpacity
+                                            key={cat}
+                                            style={[styles.catBadge, form.categoria === cat && styles.catBadgeActive]}
+                                            onPress={() => setForm(p => ({ ...p, categoria: cat }))}
+                                        >
+                                            <Text style={[styles.catText, form.categoria === cat && styles.catTextActive]}>{cat}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Descripción</Text>
-              <TextInput style={[styles.input, { height: 70 }]} value={form.descripcion} onChangeText={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Descripción del producto..." placeholderTextColor={Colors.muted} multiline />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Descripción</Text>
+                                <TextInput style={[styles.input, { height: 70 }]} value={form.descripcion} onChangeText={v => setForm(p => ({ ...p, descripcion: v }))} placeholder="Descripción del producto..." placeholderTextColor={Colors.muted} multiline />
+                            </View>
 
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Precio (€) *</Text>
-                <TextInput style={styles.input} value={form.precio} onChangeText={v => setForm(p => ({ ...p, precio: v }))} keyboardType="numeric" placeholder="19.99" placeholderTextColor={Colors.muted} />
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Stock *</Text>
-                <TextInput style={styles.input} value={form.stock} onChangeText={v => setForm(p => ({ ...p, stock: v }))} keyboardType="numeric" placeholder="10" placeholderTextColor={Colors.muted} />
-              </View>
-            </View>
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Text style={styles.label}>Precio (€) *</Text>
+                                    <TextInput style={styles.input} value={form.precio} onChangeText={v => setForm(p => ({ ...p, precio: v }))} keyboardType="numeric" placeholder="19.99" placeholderTextColor={Colors.muted} />
+                                </View>
+                                <View style={{ width: 12 }} />
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Text style={styles.label}>Stock *</Text>
+                                    <TextInput style={styles.input} value={form.stock} onChangeText={v => setForm(p => ({ ...p, stock: v }))} keyboardType="numeric" placeholder="10" placeholderTextColor={Colors.muted} />
+                                </View>
+                            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Imagen</Text>
-              {form.imagen_url ? (
-                <Image source={{ uri: form.imagen_url }} style={{ width: '100%', height: 140, borderRadius: 8, marginBottom: 8 }} resizeMode="contain" />
-              ) : null}
-              <TouchableOpacity style={styles.btnGhost} onPress={subirImagen}>
-                <Text style={styles.btnGhostText}>{form.imagen_url ? 'Cambiar imagen' : 'Seleccionar imagen'}</Text>
-              </TouchableOpacity>
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Imagen</Text>
+                                {form.imagen_url ? (
+                                    <Image source={{ uri: form.imagen_url }} style={{ width: '100%', height: 140, borderRadius: 8, marginBottom: 8 }} resizeMode="contain" />
+                                ) : null}
+                                <TouchableOpacity style={styles.btnGhost} onPress={subirImagen}>
+                                    <Text style={styles.btnGhostText}>{form.imagen_url ? 'Cambiar imagen' : 'Seleccionar imagen'}</Text>
+                                </TouchableOpacity>
+                            </View>
 
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
-                <Text style={styles.btnGhostText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
-                <Text style={styles.btnPrimaryText}>{editando ? 'Guardar cambios' : 'Crear producto'}</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
-    </ScrollView>
-  );
+                            <View style={styles.modalBtns}>
+                                <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
+                                    <Text style={styles.btnGhostText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.btnPrimary} onPress={guardar}>
+                                    <Text style={styles.btnPrimaryText}>{editando ? 'Guardar cambios' : 'Crear producto'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </View>
+                </Modal>
+            </ScrollView>
+            <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+        </>
+    );
 }
 
 const styles = StyleSheet.create({

@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function ProgresoScreen() {
   const { token } = useAuth();
@@ -23,6 +25,7 @@ export default function ProgresoScreen() {
     peso_levantado: '',
     repeticiones: '',
   });
+  const { toast, mostrar, ocultar } = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -64,7 +67,7 @@ export default function ProgresoScreen() {
       });
       cargarDatos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al guardar registro');
+      mostrar(e.response?.data?.error || 'Error al guardar registro', 'error');
     }
   }
 
@@ -90,188 +93,191 @@ export default function ProgresoScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.titulo}>Mi progreso</Text>
-          <Text style={styles.subtitulo}>{registros.length} registros</Text>
-        </View>
-        <TouchableOpacity style={styles.btnPrimary} onPress={() => setModal(true)}>
-          <Text style={styles.btnPrimaryText}>+ Añadir</Text>
-        </TouchableOpacity>
-      </View>
-
-      
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={[styles.statNum, { color: Colors.accent }]}>
-            {ultimoPeso ? `${ultimoPeso}kg` : '—'}
-          </Text>
-          <Text style={styles.statLabel}>Peso actual</Text>
-          {diferenciaPeso && (
-            <Text style={[styles.statDelta, { color: parseFloat(diferenciaPeso) < 0 ? Colors.green : Colors.red }]}>
-              {parseFloat(diferenciaPeso) > 0 ? '+' : ''}{diferenciaPeso}kg
-            </Text>
-          )}
-        </View>
-        <View style={styles.statCard}>
-          <Text style={[styles.statNum, { color: Colors.accent }]}>
-            {Object.keys(marcasPorEjercicio).length}
-          </Text>
-          <Text style={styles.statLabel}>Ejercicios registrados</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={[styles.statNum, { color: Colors.accent }]}>
-            {registros.length}
-          </Text>
-          <Text style={styles.statLabel}>Total registros</Text>
-        </View>
-      </View>
-
-      
-      {registrosPeso.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Historial de peso</Text>
-          {registrosPeso.map((r: any, i: number) => (
-            <View key={r.id} style={styles.pesoRow}>
-              <View style={styles.pesoLeft}>
-                <Ionicons name="scale-outline" size={16} color={Colors.muted} />
-                <Text style={styles.pesoFecha}>{new Date(r.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</Text>
-              </View>
-              <Text style={styles.pesoValor}>{r.peso} kg</Text>
-              {i > 0 && registrosPeso[i - 1]?.peso && (
-                <Text style={[styles.pesoDelta, {
-                  color: r.peso < registrosPeso[i - 1].peso ? Colors.green : Colors.red
-                }]}>
-                  {(r.peso - registrosPeso[i - 1].peso) > 0 ? '+' : ''}
-                  {(r.peso - registrosPeso[i - 1].peso).toFixed(1)}kg
-                </Text>
-              )}
-            </View>
-          ))}
-        </View>
-      )}
-
-      
-      {Object.keys(marcasPorEjercicio).length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mejores marcas</Text>
-          {Object.values(marcasPorEjercicio).map((m: any, i: number) => (
-            <View key={i} style={styles.marcaCard}>
-              <View style={styles.marcaIconWrap}>
-                <Ionicons name="trophy-outline" size={18} color={Colors.accent} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.marcaNombre}>{m.nombre}</Text>
-              </View>
-              <Text style={styles.marcaPeso}>{m.mejor} kg</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Últimos registros</Text>
-        {registros.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Ionicons name="stats-chart-outline" size={40} color={Colors.muted} style={{ marginBottom: 12 }} />
-            <Text style={styles.emptyText}>No hay registros aún</Text>
-            <Text style={styles.emptySubtext}>Añade tu primer registro de progreso</Text>
-          </View>
-        ) : (
-          registros.slice(0, 10).map((r: any) => (
-            <View key={r.id} style={styles.registroCard}>
-              <Text style={styles.registroFecha}>
-                {new Date(r.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </Text>
-              <View style={styles.registroData}>
-               {r.peso && (<View style={[styles.registroChip, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}><Ionicons name="scale-outline" size={14} color={Colors.muted} /><Text style={styles.registroChipText}>{r.peso}kg</Text></View>)}
-               {r.altura && (<View style={[styles.registroChip, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}><Ionicons name="man-outline" size={14} color={Colors.muted} /><Text style={styles.registroChipText}>{r.altura}cm</Text></View>)}
-               {r.ejercicios && (<View style={[styles.registroChip, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}><Ionicons name="barbell-outline" size={14} color={Colors.muted} /><Text style={styles.registroChipText}>{r.ejercicios.nombre}: {r.peso_levantado}kg × {r.repeticiones}</Text></View>)}
-              </View>
-            </View>
-          ))
-        )}
-      </View>
-
-      
-      <Modal visible={modal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.modalTitulo}>Añadir registro</Text>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Fecha</Text>
-              <TextInput style={styles.input} value={form.fecha} onChangeText={v => setForm(p => ({ ...p, fecha: v }))} placeholderTextColor={Colors.muted} />
-            </View>
-
-            <View><Text style={styles.sectionLabel}>Medidas corporales</Text></View>
-
-            <View style={styles.row}>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Peso (kg)</Text>
-                <TextInput style={styles.input} value={form.peso} onChangeText={v => setForm(p => ({ ...p, peso: v }))} keyboardType="numeric" placeholder="74.5" placeholderTextColor={Colors.muted} />
-              </View>
-              <View style={{ width: 12 }} />
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Altura (cm)</Text>
-                <TextInput style={styles.input} value={form.altura} onChangeText={v => setForm(p => ({ ...p, altura: v }))} keyboardType="numeric" placeholder="178" placeholderTextColor={Colors.muted} />
-              </View>
-            </View>
-
-            <View><Text style={styles.sectionLabel}>Levantamiento (opcional)</Text></View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Ejercicio</Text>
-              <ScrollView style={styles.ejerciciosList} nestedScrollEnabled>
-                <TouchableOpacity
-                  style={[styles.ejercicioOption, !form.ejercicio_id && styles.ejercicioOptionActive]}
-                  onPress={() => setForm(p => ({ ...p, ejercicio_id: '' }))}
-                >
-                  <Text style={[styles.ejercicioOptionText, !form.ejercicio_id && styles.ejercicioOptionTextActive]}>Ninguno</Text>
-                </TouchableOpacity>
-                {ejercicios.map(e => (
-                  <TouchableOpacity
-                    key={e.id}
-                    style={[styles.ejercicioOption, form.ejercicio_id === String(e.id) && styles.ejercicioOptionActive]}
-                    onPress={() => setForm(p => ({ ...p, ejercicio_id: String(e.id) }))}
-                  >
-                    <Text style={[styles.ejercicioOptionText, form.ejercicio_id === String(e.id) && styles.ejercicioOptionTextActive]}>
-                      {e.nombre}
-                    </Text>
-                    <Text style={styles.ejercicioOptionGrupo}>{e.grupo_muscular}</Text>
+      <>
+          <ScrollView style={styles.container}>
+              <View style={styles.header}>
+                  <View>
+                      <Text style={styles.titulo}>Mi progreso</Text>
+                      <Text style={styles.subtitulo}>{registros.length} registros</Text>
+                  </View>
+                  <TouchableOpacity style={styles.btnPrimary} onPress={() => setModal(true)}>
+                      <Text style={styles.btnPrimaryText}>+ Añadir</Text>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            {form.ejercicio_id !== ''&& (
-              <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                  <Text style={styles.label}>Peso levantado (kg)</Text>
-                  <TextInput style={styles.input} value={form.peso_levantado} onChangeText={v => setForm(p => ({ ...p, peso_levantado: v }))} keyboardType="numeric" placeholder="100" placeholderTextColor={Colors.muted} />
-                </View>
-                <View style={{ width: 12 }} />
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                  <Text style={styles.label}>Repeticiones</Text>
-                  <TextInput style={styles.input} value={form.repeticiones} onChangeText={v => setForm(p => ({ ...p, repeticiones: v }))} keyboardType="numeric" placeholder="5" placeholderTextColor={Colors.muted} />
-                </View>
               </View>
-            )}
 
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
-                <Text style={styles.btnGhostText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimary} onPress={guardarRegistro}>
-                <Text style={styles.btnPrimaryText}>Guardar</Text>
-              </TouchableOpacity>
-            </View>
+
+              <View style={styles.statsRow}>
+                  <View style={styles.statCard}>
+                      <Text style={[styles.statNum, { color: Colors.accent }]}>
+                          {ultimoPeso ? `${ultimoPeso}kg` : '—'}
+                      </Text>
+                      <Text style={styles.statLabel}>Peso actual</Text>
+                      {diferenciaPeso && (
+                          <Text style={[styles.statDelta, { color: parseFloat(diferenciaPeso) < 0 ? Colors.green : Colors.red }]}>
+                              {parseFloat(diferenciaPeso) > 0 ? '+' : ''}{diferenciaPeso}kg
+                          </Text>
+                      )}
+                  </View>
+                  <View style={styles.statCard}>
+                      <Text style={[styles.statNum, { color: Colors.accent }]}>
+                          {Object.keys(marcasPorEjercicio).length}
+                      </Text>
+                      <Text style={styles.statLabel}>Ejercicios registrados</Text>
+                  </View>
+                  <View style={styles.statCard}>
+                      <Text style={[styles.statNum, { color: Colors.accent }]}>
+                          {registros.length}
+                      </Text>
+                      <Text style={styles.statLabel}>Total registros</Text>
+                  </View>
+              </View>
+
+
+              {registrosPeso.length > 0 && (
+                  <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>Historial de peso</Text>
+                      {registrosPeso.map((r: any, i: number) => (
+                          <View key={r.id} style={styles.pesoRow}>
+                              <View style={styles.pesoLeft}>
+                                  <Ionicons name="scale-outline" size={16} color={Colors.muted} />
+                                  <Text style={styles.pesoFecha}>{new Date(r.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</Text>
+                              </View>
+                              <Text style={styles.pesoValor}>{r.peso} kg</Text>
+                              {i > 0 && registrosPeso[i - 1]?.peso && (
+                                  <Text style={[styles.pesoDelta, {
+                                      color: r.peso < registrosPeso[i - 1].peso ? Colors.green : Colors.red
+                                  }]}>
+                                      {(r.peso - registrosPeso[i - 1].peso) > 0 ? '+' : ''}
+                                      {(r.peso - registrosPeso[i - 1].peso).toFixed(1)}kg
+                                  </Text>
+                              )}
+                          </View>
+                      ))}
+                  </View>
+              )}
+
+
+              {Object.keys(marcasPorEjercicio).length > 0 && (
+                  <View style={styles.section}>
+                      <Text style={styles.sectionTitle}>Mejores marcas</Text>
+                      {Object.values(marcasPorEjercicio).map((m: any, i: number) => (
+                          <View key={i} style={styles.marcaCard}>
+                              <View style={styles.marcaIconWrap}>
+                                  <Ionicons name="trophy-outline" size={18} color={Colors.accent} />
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                  <Text style={styles.marcaNombre}>{m.nombre}</Text>
+                              </View>
+                              <Text style={styles.marcaPeso}>{m.mejor} kg</Text>
+                          </View>
+                      ))}
+                  </View>
+              )}
+
+
+              <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Últimos registros</Text>
+                  {registros.length === 0 ? (
+                      <View style={styles.emptyCard}>
+                          <Ionicons name="stats-chart-outline" size={40} color={Colors.muted} style={{ marginBottom: 12 }} />
+                          <Text style={styles.emptyText}>No hay registros aún</Text>
+                          <Text style={styles.emptySubtext}>Añade tu primer registro de progreso</Text>
+                      </View>
+                  ) : (
+                      registros.slice(0, 10).map((r: any) => (
+                          <View key={r.id} style={styles.registroCard}>
+                              <Text style={styles.registroFecha}>
+                                  {new Date(r.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </Text>
+                              <View style={styles.registroData}>
+                                  {r.peso && (<View style={[styles.registroChip, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}><Ionicons name="scale-outline" size={14} color={Colors.muted} /><Text style={styles.registroChipText}>{r.peso}kg</Text></View>)}
+                                  {r.altura && (<View style={[styles.registroChip, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}><Ionicons name="man-outline" size={14} color={Colors.muted} /><Text style={styles.registroChipText}>{r.altura}cm</Text></View>)}
+                                  {r.ejercicios && (<View style={[styles.registroChip, { flexDirection: 'row', alignItems: 'center', gap: 4 }]}><Ionicons name="barbell-outline" size={14} color={Colors.muted} /><Text style={styles.registroChipText}>{r.ejercicios.nombre}: {r.peso_levantado}kg × {r.repeticiones}</Text></View>)}
+                              </View>
+                          </View>
+                      ))
+                  )}
+              </View>
+
+
+              <Modal visible={modal} transparent animationType="slide">
+                  <View style={styles.modalOverlay}>
+                      <ScrollView style={styles.modalContent}>
+                          <Text style={styles.modalTitulo}>Añadir registro</Text>
+
+                          <View style={styles.inputGroup}>
+                              <Text style={styles.label}>Fecha</Text>
+                              <TextInput style={styles.input} value={form.fecha} onChangeText={v => setForm(p => ({ ...p, fecha: v }))} placeholderTextColor={Colors.muted} />
+                          </View>
+
+                          <View><Text style={styles.sectionLabel}>Medidas corporales</Text></View>
+
+                          <View style={styles.row}>
+                              <View style={[styles.inputGroup, { flex: 1 }]}>
+                                  <Text style={styles.label}>Peso (kg)</Text>
+                                  <TextInput style={styles.input} value={form.peso} onChangeText={v => setForm(p => ({ ...p, peso: v }))} keyboardType="numeric" placeholder="74.5" placeholderTextColor={Colors.muted} />
+                              </View>
+                              <View style={{ width: 12 }} />
+                              <View style={[styles.inputGroup, { flex: 1 }]}>
+                                  <Text style={styles.label}>Altura (cm)</Text>
+                                  <TextInput style={styles.input} value={form.altura} onChangeText={v => setForm(p => ({ ...p, altura: v }))} keyboardType="numeric" placeholder="178" placeholderTextColor={Colors.muted} />
+                              </View>
+                          </View>
+
+                          <View><Text style={styles.sectionLabel}>Levantamiento (opcional)</Text></View>
+
+                          <View style={styles.inputGroup}>
+                              <Text style={styles.label}>Ejercicio</Text>
+                              <ScrollView style={styles.ejerciciosList} nestedScrollEnabled>
+                                  <TouchableOpacity
+                                      style={[styles.ejercicioOption, !form.ejercicio_id && styles.ejercicioOptionActive]}
+                                      onPress={() => setForm(p => ({ ...p, ejercicio_id: '' }))}
+                                  >
+                                      <Text style={[styles.ejercicioOptionText, !form.ejercicio_id && styles.ejercicioOptionTextActive]}>Ninguno</Text>
+                                  </TouchableOpacity>
+                                  {ejercicios.map(e => (
+                                      <TouchableOpacity
+                                          key={e.id}
+                                          style={[styles.ejercicioOption, form.ejercicio_id === String(e.id) && styles.ejercicioOptionActive]}
+                                          onPress={() => setForm(p => ({ ...p, ejercicio_id: String(e.id) }))}
+                                      >
+                                          <Text style={[styles.ejercicioOptionText, form.ejercicio_id === String(e.id) && styles.ejercicioOptionTextActive]}>
+                                              {e.nombre}
+                                          </Text>
+                                          <Text style={styles.ejercicioOptionGrupo}>{e.grupo_muscular}</Text>
+                                      </TouchableOpacity>
+                                  ))}
+                              </ScrollView>
+                          </View>
+
+                          {form.ejercicio_id !== '' && (
+                              <View style={styles.row}>
+                                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                                      <Text style={styles.label}>Peso levantado (kg)</Text>
+                                      <TextInput style={styles.input} value={form.peso_levantado} onChangeText={v => setForm(p => ({ ...p, peso_levantado: v }))} keyboardType="numeric" placeholder="100" placeholderTextColor={Colors.muted} />
+                                  </View>
+                                  <View style={{ width: 12 }} />
+                                  <View style={[styles.inputGroup, { flex: 1 }]}>
+                                      <Text style={styles.label}>Repeticiones</Text>
+                                      <TextInput style={styles.input} value={form.repeticiones} onChangeText={v => setForm(p => ({ ...p, repeticiones: v }))} keyboardType="numeric" placeholder="5" placeholderTextColor={Colors.muted} />
+                                  </View>
+                              </View>
+                          )}
+
+                          <View style={styles.modalBtns}>
+                              <TouchableOpacity style={styles.btnGhost} onPress={() => setModal(false)}>
+                                  <Text style={styles.btnGhostText}>Cancelar</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity style={styles.btnPrimary} onPress={guardarRegistro}>
+                                  <Text style={styles.btnPrimaryText}>Guardar</Text>
+                              </TouchableOpacity>
+                          </View>
+                      </ScrollView>
+                  </View>
+              </Modal>
           </ScrollView>
-        </View>
-      </Modal>
-    </ScrollView>
+          <Toast visible={toast.visible} mensaje={toast.mensaje} tipo={toast.tipo} onHide={ocultar} />
+      </>
   );
 }
 

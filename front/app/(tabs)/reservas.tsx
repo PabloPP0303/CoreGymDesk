@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 export default function MisReservasScreen() {
   const { token } = useAuth();
@@ -15,6 +17,7 @@ export default function MisReservasScreen() {
   const [historial, setHistorial] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
   const [verHistorial, setVerHistorial] = useState(false);
+  const { toast, mostrar, ocultar } = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -50,7 +53,7 @@ export default function MisReservasScreen() {
       });
       cargarReservas();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al cancelar reserva');
+      mostrar(e.response?.data?.error || 'Error al cancelar reserva', 'error');
     }
   }
 

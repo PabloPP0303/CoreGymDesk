@@ -7,6 +7,8 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { API_URL, Colors } from '../../constants/theme';
 import { useFocusEffect } from 'expo-router';
+import { Toast } from '../../notificaciones/Toast';
+import { useToast } from '../../hooks/useToast';
 
 const DIAS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 const DIAS_LABEL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -28,6 +30,7 @@ export default function RutinasScreen() {
     series: '3',
     repeticiones: '10',
   });
+  const { toast, mostrar, ocultar } = useToast();
 
   const [modalEditar, setModalEditar] = useState(false);
   const [ejercicioEditando, setEjercicioEditando] = useState<any>(null);
@@ -56,7 +59,7 @@ export default function RutinasScreen() {
 
   async function crearRutina() {
     if (!nombreRutina.trim()) {
-      window.alert('Escribe un nombre para la rutina');
+      mostrar('Escribe un nombre para la rutina', 'error');
       return;
     }
     try {
@@ -69,7 +72,7 @@ export default function RutinasScreen() {
       setModalRutina(false);
       cargarDatos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al crear rutina');
+      mostrar(e.response?.data?.error || 'Error al crear rutina', 'error');
     }
   }
 
@@ -82,13 +85,13 @@ export default function RutinasScreen() {
       });
       cargarDatos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al eliminar');
+      mostrar(e.response?.data?.error || 'Error al eliminar', 'error');
     }
   }
 
   async function añadirEjercicio() {
     if (!ejercicioForm.ejercicio_id) {
-      window.alert('Selecciona un ejercicio');
+      mostrar('Selecciona un ejercicio', 'error');
       return;
     }
     try {
@@ -107,7 +110,7 @@ export default function RutinasScreen() {
       setEjercicioForm({ ejercicio_id: '', dia: 'lunes', series: '3', repeticiones: '10' });
       cargarDatos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al añadir ejercicio');
+      mostrar(e.response?.data?.error || 'Error al añadir ejercicio', 'error');
     }
   }
 
@@ -125,7 +128,7 @@ export default function RutinasScreen() {
       setModalEditar(false);
       cargarDatos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al editar ejercicio');
+      mostrar(e.response?.data?.error || 'Error al editar ejercicio', 'error');
     }
   }
 
@@ -136,7 +139,7 @@ export default function RutinasScreen() {
       });
       cargarDatos();
     } catch (e: any) {
-      window.alert(e.response?.data?.error || 'Error al eliminar ejercicio');
+      mostrar(e.response?.data?.error || 'Error al eliminar ejercicio', 'error');
     }
   }
 
